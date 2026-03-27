@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetVida — Clínica Veterinaria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="loader">
+  <div class="loader-logo">Vet<span>Vida</span></div>
+  <div class="loader-paws">
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+  </div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar"></div>
+  </div>
+  <p class="loader-text">Cargando la clínica…</p>
+</div>
+
+  <!-- ══════════════════════════════
+       CURSOR PERSONALIZADO
+  ══════════════════════════════ -->
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- ══════════════════════════════
+       TOAST NOTIFICACIÓN
+  ══════════════════════════════ -->
+  <div id="toast">🐾 ¡Turno reservado con éxito!</div>
+
+  <!-- ══════════════════════════════
+       NAVEGACIÓN
+  ══════════════════════════════ -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">Vet<span>Vida</span></a>
+    <ul class="nav-links">
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#equipo">Equipo</a></li>
+      <li><a href="#testimonios">Testimonios</a></li>
+      <li><a href="#turnos" class="nav-cta">Reservar turno</a></li>
+    </ul>
+  </nav>
+  
+
+  <!-- ══════════════════════════════
+       HERO
+  ══════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Cuidado veterinario de excelencia</div>
+      <h1 class="hero-title">
+        Tu mascota merece<br>lo <em>mejor</em> de nosotros
+      </h1>
+      <p class="hero-subtitle">
+        Atención profesional, cariñosa y personalizada para cada animal.
+        Más de 15 años cuidando a quienes más querés.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="document.getElementById('turnos').scrollIntoView({behavior:'smooth'})">
+          <span>Reservar turno →</span>
+        </button>
+        <a href="#servicios" class="btn-secondary">Ver servicios →</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num" data-target="4800">0</span>
+          <span class="stat-label">Pacientes atendidos</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="15">0</span>
+          <span class="stat-label">Años de experiencia</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="98">0</span>
+          <span class="stat-label">% de satisfacción</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-bg-text">VET</div>
+      <div class="dots-grid" id="dotsGrid"></div>
+      <div class="circle-deco" style="width:400px;height:400px;top:-100px;right:-150px;"></div>
+      <div class="circle-deco" style="width:240px;height:240px;bottom:80px;left:40px;"></div>
+      <div class="hero-card">
+        <span class="hero-icon">🐶</span>
+        <h3>Tu mejor amigo<br>en buenas manos</h3>
+        <p>Atención de emergencia 24/7. Siempre disponibles cuando más lo necesitás.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       SERVICIOS
+  ══════════════════════════════ -->
+  <section id="servicios">
+    <div class="services-header reveal">
+      <div>
+        <p class="section-eyebrow">Lo que ofrecemos</p>
+        <h2 class="section-title">Servicios integrales<br>para tu mascota</h2>
+        <p class="section-sub">Desde controles de rutina hasta cirugías especializadas. Todo lo que necesita tu compañero.</p>
+      </div>
+      <a href="tienda.html" class="btn-shop-link">🛒 Ir a la Tienda →</a>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal" style="transition-delay:.05s">
+        <div class="service-icon">🩺</div>
+        <h3>Consulta General</h3>
+        <p>Revisación completa, diagnóstico y tratamiento de enfermedades comunes. Control de bienestar general.</p>
+        <span class="service-price">Desde $8.000</span>
+      </div>
+      <div class="service-card reveal" style="transition-delay:.1s">
+        <div class="service-icon">💉</div>
+        <h3>Vacunación</h3>
+        <p>Plan de vacunación personalizado para perros, gatos y pequeños animales. Carnets y registros actualizados.</p>
+        <span class="service-price">Desde $4.500</span>
+      </div>
+      <div class="service-card reveal" style="transition-delay:.15s">
+        <div class="service-icon">🔬</div>
+        <h3>Laboratorio</h3>
+        <p>Análisis de sangre, orina, biopsias y estudios especiales con resultados en el día.</p>
+        <span class="service-price">Desde $6.000</span>
+      </div>
+      <div class="service-card reveal" style="transition-delay:.2s">
+        <div class="service-icon">📡</div>
+        <h3>Diagnóstico por Imagen</h3>
+        <p>Radiografías digitales y ecografías para un diagnóstico preciso y rápido.</p>
+        <span class="service-price">Desde $9.000</span>
+      </div>
+      <div class="service-card reveal" style="transition-delay:.25s">
+        <div class="service-icon">🏥</div>
+        <h3>Cirugía</h3>
+        <p>Cirugías de tejidos blandos, ortopédicas y esterilizaciones con anestesia monitoreada.</p>
+        <span class="service-price">Desde $35.000</span>
+      </div>
+      <div class="service-card reveal" style="transition-delay:.3s">
+        <div class="service-icon">🛁</div>
+        <h3>Estética</h3>
+        <p>Baño, peluquería y arreglo de uñas. Dejamos a tu mascota impecable y feliz.</p>
+        <span class="service-price">Desde $5.000</span>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       EQUIPO
+  ══════════════════════════════ -->
+  <section id="equipo">
+    <div class="reveal">
+      <p class="section-eyebrow">Nuestros profesionales</p>
+      <h2 class="section-title">El equipo detrás<br>de cada sonrisa</h2>
+      <p class="section-sub">Veterinarios apasionados y continuamente capacitados para brindar la mejor atención.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal" style="transition-delay:.05s">
+        <div class="team-photo">👩‍⚕️</div>
+        <div class="team-overlay">
+          <p class="team-name">Dra. Valentina Ramos</p>
+          <p class="team-role">Directora Médica · Cirugía</p>
+          <p class="team-bio">Especialista en cirugía de tejidos blandos. 12 años de experiencia. Egresada UBA con posgrado en España.</p>
+        </div>
+      </div>
+      <div class="team-card reveal" style="transition-delay:.1s">
+        <div class="team-photo">👨‍⚕️</div>
+        <div class="team-overlay">
+          <p class="team-name">Dr. Matías Herrera</p>
+          <p class="team-role">Medicina Interna · Felinos</p>
+          <p class="team-bio">Especialista en medicina felina y diagnóstico por imagen. Formación en Brasil y Uruguay.</p>
+        </div>
+      </div>
+      <div class="team-card reveal" style="transition-delay:.15s">
+        <div class="team-photo">👩‍⚕️</div>
+        <div class="team-overlay">
+          <p class="team-name">Dra. Luciana Paz</p>
+          <p class="team-role">Dermatología · Nutrición</p>
+          <p class="team-bio">Especialista en dermatología veterinaria y alimentación balanceada. Atención personalizada y holística.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       TESTIMONIOS
+  ══════════════════════════════ -->
+  <section id="testimonios">
+    <div class="reveal">
+      <p class="section-eyebrow">Lo que dicen nuestros clientes</p>
+      <h2 class="section-title">Familias que<br>confían en nosotros</h2>
+    </div>
+    <div class="testimonios-grid">
+      <div class="testi-card reveal" style="transition-delay:.05s">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">La Dra. Valentina operó a mi perro y fue increíble. Explicaron todo con paciencia, el seguimiento post-operatorio fue perfecto.</p>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🙋‍♀️</div>
+          <div>
+            <p class="testi-name">María González</p>
+            <p class="testi-pet">Mamá de Tobi 🐕</p>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay:.1s">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Mi gata tiene una enfermedad crónica y siempre encuentro la mejor atención aquí. Se nota que aman los animales.</p>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🙋‍♂️</div>
+          <div>
+            <p class="testi-name">Roberto Díaz</p>
+            <p class="testi-pet">Papá de Luna 🐱</p>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay:.15s">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Reservar turno online es comodísimo. La atención es puntual y el lugar es impecable. 100% recomendados.</p>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🙋‍♀️</div>
+          <div>
+            <p class="testi-name">Carolina Méndez</p>
+            <p class="testi-pet">Mamá de Max 🐶</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       TURNOS / FORMULARIO
+  ══════════════════════════════ -->
+  <section id="turnos">
+    <div class="reveal">
+      <p class="section-eyebrow">Reservas</p>
+      <h2 class="section-title">Pedí tu turno<br>ahora</h2>
+      <p class="section-sub">Completá el formulario y nos ponemos en contacto en menos de 2 horas para confirmarte.</p>
+    </div>
+
+    <div class="turno-layout">
+      <!-- Formulario -->
+      <div class="turno-form reveal" style="transition-delay:.1s">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tu nombre</label>
+            <input type="text" placeholder="Ana García" id="f-nombre">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" placeholder="+54 341 000-0000" id="f-tel">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre de la mascota</label>
+            <input type="text" placeholder="Firulais" id="f-mascota">
+          </div>
+          <div class="form-group">
+            <label>Especie</label>
+            <select id="f-especie">
+              <option value="">Seleccionar...</option>
+              <option>Perro</option>
+              <option>Gato</option>
+              <option>Ave</option>
+              <option>Conejo</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Servicio</label>
+          <select id="f-servicio">
+            <option value="">¿Qué necesitás?</option>
+            <option>Consulta general</option>
+            <option>Vacunación</option>
+            <option>Laboratorio</option>
+            <option>Cirugía</option>
+            <option>Diagnóstico por imagen</option>
+            <option>Estética</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha deseada</label>
+            <input type="date" id="f-fecha">
+          </div>
+          <div class="form-group">
+            <label>Turno preferido</label>
+            <select id="f-horario">
+              <option value="">Elegir horario</option>
+              <option>09:00 - 10:00</option>
+              <option>10:00 - 11:00</option>
+              <option>11:00 - 12:00</option>
+              <option>15:00 - 16:00</option>
+              <option>16:00 - 17:00</option>
+              <option>17:00 - 18:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Comentarios (opcional)</label>
+          <textarea rows="3" placeholder="Contanos brevemente el motivo de la consulta..." id="f-comentarios"></textarea>
+        </div>
+        <button class="btn-submit" onclick="submitForm()">Reservar turno →</button>
+      </div>
+
+      <!-- Info lateral -->
+      <div class="turno-info reveal" style="transition-delay:.2s">
+        <div class="info-block">
+          <h4>📅 Horarios de atención</h4>
+          <div class="schedule-item">
+            <span class="schedule-day">Lunes – Viernes</span>
+            <span class="schedule-time">9:00 – 20:00</span>
+          </div>
+          <div class="schedule-item">
+            <span class="schedule-day">Sábados</span>
+            <span class="schedule-time">9:00 – 14:00</span>
+          </div>
+          <div class="schedule-item">
+            <span class="schedule-day">Domingos</span>
+            <span class="schedule-time">Emergencias 24/7</span>
+          </div>
+        </div>
+        <div class="info-block">
+          <h4>📍 Cómo contactarnos</h4>
+          <div class="contact-item"><span class="contact-icon">📞</span> (0341) 456-7890</div>
+          <div class="contact-item"><span class="contact-icon">💬</span> WhatsApp: +54 9 341 456-7890</div>
+          <div class="contact-item"><span class="contact-icon">📧</span> hola@vetvida.com.ar</div>
+          <div class="contact-item"><span class="contact-icon">📍</span> Av. San Martín 1240, Rosario</div>
+        </div>
+        <div class="info-block">
+          <h4>🚨 Emergencias</h4>
+          <p class="emergency-text">Contamos con guardia permanente para urgencias. Llamanos en cualquier momento al número de emergencias.</p>
+          <div class="emergency-phone">📞 0800-555-VET</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════
+       FOOTER
+  ══════════════════════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo">Vet<span>Vida</span></div>
+        <p class="footer-desc">Cuidando la salud y felicidad de tus mascotas desde 2008. Porque ellos son parte de la familia.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Servicios</h5>
+        <ul>
+          <li><a href="#servicios">Consulta General</a></li>
+          <li><a href="#servicios">Vacunación</a></li>
+          <li><a href="#servicios">Laboratorio</a></li>
+          <li><a href="#servicios">Cirugía</a></li>
+          <li><a href="#servicios">Estética</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Clínica</h5>
+        <ul>
+          <li><a href="#equipo">Nuestro equipo</a></li>
+          <li><a href="#turnos">Reservar turno</a></li>
+          <li><a href="#">Emergencias 24h</a></li>
+          <li><a href="#">Obras sociales</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Seguinos</h5>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">WhatsApp</a></li>
+          <li><a href="#">Google Maps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 VetVida. Todos los derechos reservados.</span>
+      <span>Hecho con ❤️ para los amantes de los animales</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

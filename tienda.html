@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda Virtual — VetVida</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--cream:#F5F0E8;--warm-white:#FDFAF5;--forest:#2D4A3E;--forest-light:#3D6657;--sage:#7BA899;--sage-light:#A8C5BB;--terracotta:#C4714A;--terracotta-light:#D98B65;--gold:#C9A84C;--charcoal:#1C2520;--text-muted:#6B7C74;--border:rgba(45,74,62,0.12)}
+    *{margin:0;padding:0;box-sizing:border-box;cursor:none!important}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--warm-white);color:var(--charcoal);overflow-x:hidden}
+
+    /* ══ LOADER ══ */
+    #loader{position:fixed;inset:0;background:var(--forest);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .7s ease,visibility .7s ease}
+    #loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .loader-logo{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;color:white}
+    .loader-logo span{color:var(--terracotta)}
+    .loader-paws{display:flex;gap:8px}
+    .loader-paw{font-size:1.4rem;animation:pawBounce 1.2s ease-in-out infinite}
+    .loader-paw:nth-child(2){animation-delay:.2s}
+    .loader-paw:nth-child(3){animation-delay:.4s}
+    .loader-paw:nth-child(4){animation-delay:.6s}
+    @keyframes pawBounce{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-10px)}}
+    .loader-bar-wrap{width:220px;height:3px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden}
+    .loader-bar{height:100%;background:var(--terracotta);border-radius:10px;width:0;animation:loadBar 1.9s ease forwards}
+    @keyframes loadBar{to{width:100%}}
+    .loader-text{color:rgba(255,255,255,.45);font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase}
+
+    /* ══ CURSOR ══ */
+    #cursor{position:fixed;width:12px;height:12px;background:var(--terracotta);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+    #cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid var(--forest);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .12s ease;opacity:.6}
+    body:has(a:hover) #cursor,body:has(button:hover) #cursor{width:20px;height:20px}
+
+    /* ══ NAV ══ */
+    nav{position:fixed;top:0;width:100%;z-index:200;padding:16px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(253,250,245,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--forest);text-decoration:none}
+    .nav-logo span{color:var(--terracotta)}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .nav-back{color:var(--text-muted);text-decoration:none;font-size:.82rem;font-weight:600;transition:color .2s}
+    .nav-back:hover{color:var(--forest)}
+    .register-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:50px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;transition:all .2s}
+    .register-btn:hover{background:var(--forest);color:white}
+    .cart-btn{display:flex;align-items:center;gap:8px;background:var(--forest);color:white;padding:9px 20px;border-radius:50px;border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;transition:background .2s}
+    .cart-btn:hover{background:var(--terracotta)}
+    .cart-count{background:var(--terracotta);color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800}
+
+    /* ══ SLIDER ══ */
+    .slider-section{margin-top:66px;position:relative;overflow:hidden}
+    .slider-track{display:flex;transition:transform .6s cubic-bezier(.4,0,.2,1)}
+    .slide{min-width:100%;height:400px;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:56px 80px;position:relative;overflow:hidden;flex-shrink:0}
+    .slide-bg-text{position:absolute;font-family:'Playfair Display',serif;font-size:16vw;font-weight:900;right:-20px;top:50%;transform:translateY(-50%);opacity:.05;white-space:nowrap;user-select:none}
+    .slide-content{position:relative;z-index:1}
+    .slide-badge{display:inline-block;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+    .slide-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:12px}
+    .slide-sub{font-size:.92rem;line-height:1.7;margin-bottom:28px;max-width:400px}
+    .slide-cta{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:700;border:none;transition:all .25s}
+    .slide-visual{display:flex;align-items:center;justify-content:center;font-size:clamp(5rem,9vw,8rem);position:relative;z-index:1}
+    .slide-price-tag{position:absolute;bottom:24px;right:80px;padding:8px 18px;border-radius:12px;font-weight:900;font-size:1rem;color:white}
+
+    .slide-1{background:var(--forest)}
+    .slide-1 .slide-badge{background:var(--terracotta);color:white}
+    .slide-1 .slide-title{color:white}
+    .slide-1 .slide-sub{color:rgba(255,255,255,.65)}
+    .slide-1 .slide-cta{background:white;color:var(--forest)}
+    .slide-1 .slide-cta:hover{background:var(--terracotta);color:white}
+    .slide-1 .slide-price-tag{background:var(--terracotta)}
+
+    .slide-2{background:var(--terracotta)}
+    .slide-2 .slide-badge{background:white;color:var(--terracotta)}
+    .slide-2 .slide-title{color:white}
+    .slide-2 .slide-sub{color:rgba(255,255,255,.7)}
+    .slide-2 .slide-cta{background:var(--charcoal);color:white}
+    .slide-2 .slide-cta:hover{background:white;color:var(--terracotta)}
+    .slide-2 .slide-price-tag{background:var(--charcoal)}
+
+    .slide-3{background:var(--cream)}
+    .slide-3 .slide-badge{background:var(--gold);color:white}
+    .slide-3 .slide-title{color:var(--charcoal)}
+    .slide-3 .slide-sub{color:var(--text-muted)}
+    .slide-3 .slide-cta{background:var(--forest);color:white}
+    .slide-3 .slide-cta:hover{background:var(--terracotta);color:white}
+    .slide-3 .slide-price-tag{background:var(--forest)}
+
+    .slide-4{background:var(--charcoal)}
+    .slide-4 .slide-badge{background:var(--sage-light);color:var(--forest)}
+    .slide-4 .slide-title{color:white}
+    .slide-4 .slide-sub{color:rgba(255,255,255,.6)}
+    .slide-4 .slide-cta{background:var(--sage);color:white}
+    .slide-4 .slide-cta:hover{background:var(--terracotta)}
+
+    .slider-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:white;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .2s;z-index:10}
+    .slider-arrow:hover{background:rgba(255,255,255,.3)}
+    .slider-prev{left:20px}
+    .slider-next{right:20px}
+    .slider-dots{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
+    .slider-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);border:none;transition:all .3s}
+    .slider-dot.active{width:24px;border-radius:4px;background:white}
+
+    /* ══ FILTROS ══ */
+    .filters-bar{padding:20px 80px;background:var(--cream);display:flex;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:66px;z-index:50}
+    .filter-label{font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}
+    .animal-filters,.cat-filters{display:flex;gap:8px;flex-wrap:wrap}
+    .animal-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:50px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--text-muted);transition:all .2s}
+    .animal-btn:hover{border-color:var(--forest);color:var(--forest)}
+    .animal-btn.active{background:var(--forest);color:white;border-color:var(--forest)}
+    .divider{width:1px;height:30px;background:var(--border);margin:0 4px}
+    .cat-btn{padding:6px 13px;border-radius:50px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--text-muted);transition:all .2s}
+    .cat-btn:hover{border-color:var(--terracotta);color:var(--terracotta)}
+    .cat-btn.active{background:var(--terracotta);color:white;border-color:var(--terracotta)}
+    .search-box{margin-left:auto;display:flex;align-items:center;gap:8px;background:white;border:1.5px solid var(--border);border-radius:50px;padding:7px 16px}
+    .search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--charcoal);background:transparent;width:170px}
+    .search-box input::placeholder{color:var(--text-muted)}
+
+    /* ══ PRODUCTOS ══ */
+    .shop-body{padding:36px 80px 80px}
+    .results-info{font-size:.875rem;color:var(--text-muted);margin-bottom:24px}
+    .results-info strong{color:var(--charcoal)}
+    .products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+    .product-card{background:white;border-radius:20px;overflow:hidden;border:1px solid var(--border);transition:all .3s;display:flex;flex-direction:column}
+    .product-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,.1)}
+    .product-img{height:170px;display:flex;align-items:center;justify-content:center;font-size:3.8rem;background:var(--cream);position:relative}
+    .product-badge{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:50px;font-size:.68rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+    .badge-new{background:var(--forest);color:white}
+    .badge-sale{background:var(--terracotta);color:white}
+    .badge-top{background:var(--gold);color:white}
+    .product-animal-tags{position:absolute;top:10px;right:10px;display:flex;gap:3px}
+    .animal-tag{font-size:.82rem}
+    .product-body{padding:18px 18px 14px;flex:1;display:flex;flex-direction:column}
+    .product-cat{font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--terracotta);margin-bottom:5px}
+    .product-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--charcoal);margin-bottom:7px;line-height:1.3}
+    .product-desc{font-size:.78rem;color:var(--text-muted);line-height:1.6;flex:1}
+    .product-footer{padding:12px 18px 18px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);margin-top:10px}
+    .product-price{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--forest)}
+    .add-btn{width:36px;height:36px;border-radius:50%;background:var(--forest);border:none;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .add-btn:hover{background:var(--terracotta);transform:scale(1.1)}
+    .add-btn.added{background:var(--sage)}
+    .empty-state{grid-column:1/-1;text-align:center;padding:80px 0}
+    .empty-state .emoji{font-size:3.5rem;margin-bottom:14px}
+    .empty-state h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--charcoal);margin-bottom:8px}
+    .empty-state p{color:var(--text-muted);font-size:.875rem}
+
+    /* ══ CARRITO ══ */
+    .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
+    .cart-overlay.open{opacity:1;pointer-events:all}
+    .cart-panel{position:fixed;top:0;right:0;height:100vh;width:400px;background:var(--warm-white);z-index:301;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    .cart-panel.open{transform:translateX(0)}
+    .cart-header{padding:26px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .cart-header h2{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--charcoal)}
+    .close-cart{background:none;border:none;font-size:1.3rem;color:var(--text-muted);padding:4px}
+    .cart-items{flex:1;overflow-y:auto;padding:20px 30px}
+    .cart-empty{text-align:center;padding:60px 0;color:var(--text-muted)}
+    .cart-empty .emoji{font-size:2.8rem;margin-bottom:10px}
+    .cart-item{display:flex;gap:13px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+    .cart-item-icon{width:50px;height:50px;background:var(--cream);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+    .cart-item-info{flex:1}
+    .cart-item-name{font-weight:700;font-size:.88rem;color:var(--charcoal);margin-bottom:3px}
+    .cart-item-price{font-size:.83rem;color:var(--terracotta);font-weight:700}
+    .cart-item-qty{display:flex;align-items:center;gap:8px;margin-top:7px}
+    .qty-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);background:white;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .qty-btn:hover{border-color:var(--forest);color:var(--forest)}
+    .qty-num{font-weight:700;font-size:.88rem;min-width:18px;text-align:center}
+    .remove-item{background:none;border:none;color:var(--text-muted);font-size:.95rem;transition:color .2s}
+    .remove-item:hover{color:var(--terracotta)}
+    .cart-footer{padding:22px 30px;border-top:1px solid var(--border)}
+    .cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .cart-total span:first-child{font-size:.88rem;color:var(--text-muted);font-weight:600}
+    .cart-total-price{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:900;color:var(--charcoal)}
+    .checkout-btn{width:100%;padding:15px;background:var(--forest);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;transition:all .25s}
+    .checkout-btn:hover{background:var(--terracotta);transform:translateY(-2px)}
+
+    /* ══ MODALES ══ */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal{background:white;border-radius:24px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;transform:scale(.94) translateY(16px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 32px 80px rgba(0,0,0,.2)}
+    .modal-overlay.open .modal{transform:scale(1) translateY(0)}
+    .modal-head{padding:30px 34px 0;display:flex;align-items:flex-start;justify-content:space-between}
+    .modal-head h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:900;color:var(--charcoal);line-height:1.2}
+    .modal-head p{font-size:.83rem;color:var(--text-muted);margin-top:5px}
+    .close-modal{background:none;border:none;font-size:1.25rem;color:var(--text-muted);flex-shrink:0;padding:4px;margin-top:2px}
+    .modal-body{padding:24px 34px 34px}
+
+    /* ══ PAGO ══ */
+    .pay-summary{background:var(--cream);border-radius:14px;padding:18px 22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+    .pay-summary-label{font-size:.78rem;color:var(--text-muted);font-weight:600;margin-bottom:3px}
+    .pay-summary-total{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--forest)}
+    .pay-summary-items{font-size:.78rem;color:var(--text-muted)}
+    .section-label{font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+    .pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:24px}
+    .pay-method{border:2px solid var(--border);border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .2s;background:white}
+    .pay-method:hover{border-color:var(--sage)}
+    .pay-method.selected{border-color:var(--forest);background:rgba(45,74,62,.04)}
+    .pay-method-icon{font-size:1.4rem;flex-shrink:0}
+    .pay-method-name{font-weight:700;font-size:.83rem;color:var(--charcoal)}
+    .pay-method-sub{font-size:.72rem;color:var(--text-muted)}
+    .cuotas-section{margin-bottom:24px;display:none}
+    .cuotas-section.visible{display:block}
+    .cuotas-tabs{display:flex;gap:8px;margin-bottom:14px}
+    .cuota-tab{padding:6px 14px;border-radius:50px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--text-muted);transition:all .2s}
+    .cuota-tab:hover{border-color:var(--forest);color:var(--forest)}
+    .cuota-tab.active{background:var(--forest);color:white;border-color:var(--forest)}
+    .cuotas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .cuota-card{border:1.5px solid var(--border);border-radius:11px;padding:12px;text-align:center;transition:all .2s;background:white}
+    .cuota-card:hover{border-color:var(--forest);transform:translateY(-2px)}
+    .cuota-card.selected{border-color:var(--terracotta);background:rgba(196,113,74,.05)}
+    .cuota-num{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--charcoal)}
+    .cuota-num span{font-size:.85rem}
+    .cuota-valor{font-size:.78rem;color:var(--forest);font-weight:700;margin-top:2px}
+    .cuota-badge{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:5px;display:inline-block}
+    .cuota-badge.sin{background:rgba(123,168,153,.2);color:var(--forest)}
+    .cuota-badge.con{background:rgba(196,113,74,.15);color:var(--terracotta)}
+    .buyer-form{display:grid;gap:14px;margin-bottom:22px}
+    .form-group{display:flex;flex-direction:column;gap:5px}
+    .form-group label{font-size:.75rem;font-weight:700;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase}
+    .form-group input{padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--charcoal);outline:none;transition:border-color .2s}
+    .form-group input:focus{border-color:var(--forest)}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .confirm-btn{width:100%;padding:16px;background:var(--forest);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;transition:all .25s}
+    .confirm-btn:hover{background:var(--terracotta);transform:translateY(-2px);box-shadow:0 8px 24px rgba(196,113,74,.35)}
+
+    /* Éxito pago */
+    .pay-success{text-align:center;padding:10px 0;display:none}
+    .pay-success.visible{display:block}
+    .pay-success-icon{font-size:3.8rem;margin-bottom:14px;display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+    .pay-success h3{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--charcoal);margin-bottom:8px}
+    .pay-success p{color:var(--text-muted);font-size:.875rem;line-height:1.7;margin-bottom:22px}
+    .pay-success-detail{background:var(--cream);border-radius:13px;padding:16px 20px;margin-bottom:22px;text-align:left}
+    .pay-success-detail div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+    .pay-success-detail div:last-child{border-bottom:none;font-weight:700}
+    .close-success-btn{padding:13px 30px;background:var(--forest);color:white;border:none;border-radius:50px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.88rem;transition:all .2s}
+    .close-success-btn:hover{background:var(--terracotta)}
+
+    /* ══ REGISTRO ══ */
+    .register-perks{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:22px}
+    .perk-item{display:flex;align-items:flex-start;gap:9px;background:var(--cream);border-radius:11px;padding:13px}
+    .perk-icon{font-size:1.1rem;flex-shrink:0}
+    .perk-text{font-size:.78rem;color:var(--text-muted);line-height:1.5}
+    .perk-text strong{color:var(--charcoal);display:block;font-size:.8rem;margin-bottom:2px}
+    .register-form{display:grid;gap:14px}
+    .pets-check{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+    .pet-check-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:50px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;color:var(--text-muted);transition:all .2s}
+    .pet-check-btn.selected{background:var(--forest);color:white;border-color:var(--forest)}
+    .notif-list{display:flex;flex-direction:column;gap:0}
+    .check-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .check-row:last-child{border-bottom:none}
+    .custom-check{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;transition:all .2s}
+    .custom-check.checked{background:var(--forest);border-color:var(--forest);color:white}
+    .check-label{font-size:.85rem;color:var(--charcoal);line-height:1.4}
+    .register-submit-btn{width:100%;padding:15px;background:var(--terracotta);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;transition:all .25s;margin-top:6px}
+    .register-submit-btn:hover{background:var(--terracotta-light);transform:translateY(-2px)}
+
+    /* ══ TOAST ══ */
+    #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(110px);background:var(--forest);color:white;padding:13px 26px;border-radius:50px;font-weight:700;font-size:.85rem;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:500;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    /* ══ FOOTER ══ */
+    footer{background:var(--charcoal);color:rgba(255,255,255,.5);padding:26px 80px;display:flex;justify-content:space-between;align-items:center;font-size:.8rem}
+    footer a{color:var(--terracotta);text-decoration:none}
+
+    /* ══ RESPONSIVE ══ */
+    @media(max-width:900px){
+      nav,.filters-bar,.shop-body,footer{padding-left:22px;padding-right:22px}
+      .slide{grid-template-columns:1fr;padding:36px 22px;height:auto;min-height:280px}
+      .slide-visual,.slide-price-tag{display:none}
+      .products-grid{grid-template-columns:repeat(2,1fr)}
+      .cart-panel{width:100%}
+      .search-box{margin-left:0;width:100%}
+      .filters-bar{flex-direction:column;align-items:flex-start}
+      .pay-methods{grid-template-columns:1fr}
+      .cuotas-grid{grid-template-columns:repeat(2,1fr)}
+      .register-perks{grid-template-columns:1fr}
+      .modal-head,.modal-body{padding-left:20px;padding-right:20px}
+    }
+    @media(max-width:500px){
+      .products-grid{grid-template-columns:1fr}
+      .form-row-2{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ PANTALLA DE CARGA ══ -->
+<div id="loader">
+  <div class="loader-logo">Vet<span>Vida</span></div>
+  <div class="loader-paws">
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+    <span class="loader-paw">🐾</span>
+  </div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <p class="loader-text">Cargando la tienda…</p>
+</div>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="toast"></div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a href="index.html" class="nav-logo">Vet<span>Vida</span></a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-back">← Inicio</a>
+    <button class="register-btn" onclick="openModal('registerModal')">👤 Registrarse</button>
+    <button class="cart-btn" onclick="toggleCart()">🛒 Carrito <span class="cart-count" id="cartCount">0</span></button>
+  </div>
+</nav>
+
+<!-- ══ SLIDER ══ -->
+<div class="slider-section">
+  <div class="slider-track" id="sliderTrack">
+    <div class="slide slide-1">
+      <div class="slide-bg-text">OFERTA</div>
+      <div class="slide-content">
+        <span class="slide-badge">🔥 Oferta del mes</span>
+        <h2 class="slide-title">Alimento Premium<br>hasta 30% OFF</h2>
+        <p class="slide-sub">Bolsas de 3kg y 6kg para perros y gatos. Solo por tiempo limitado.</p>
+        <button class="slide-cta" onclick="filterAndGo('comida')">Ver ofertas →</button>
+      </div>
+      <div class="slide-visual">🍖</div>
+      <div class="slide-price-tag">-30% OFF</div>
+    </div>
+    <div class="slide slide-2">
+      <div class="slide-bg-text">SALUD</div>
+      <div class="slide-content">
+        <span class="slide-badge">💊 Nuevo ingreso</span>
+        <h2 class="slide-title">Línea completa<br>de medicamentos</h2>
+        <p class="slide-sub">Antiparasitarios, vitaminas y suplementos para todas las especies.</p>
+        <button class="slide-cta" onclick="filterAndGo('medicina')">Ver productos →</button>
+      </div>
+      <div class="slide-visual">💊</div>
+      <div class="slide-price-tag">¡Nuevo!</div>
+    </div>
+    <div class="slide slide-3">
+      <div class="slide-bg-text">JUEGO</div>
+      <div class="slide-content">
+        <span class="slide-badge">🎾 Más vendidos</span>
+        <h2 class="slide-title">Juguetes que<br>hacen felices</h2>
+        <p class="slide-sub">Estimulación mental y física para perros, gatos, aves y roedores.</p>
+        <button class="slide-cta" onclick="filterAndGo('juguetes')">Explorar →</button>
+      </div>
+      <div class="slide-visual">🎾</div>
+      <div class="slide-price-tag">⭐ Popular</div>
+    </div>
+    <div class="slide slide-4">
+      <div class="slide-bg-text">CUOTAS</div>
+      <div class="slide-content">
+        <span class="slide-badge">💳 Financiación</span>
+        <h2 class="slide-title">Comprá en hasta<br>12 cuotas sin interés</h2>
+        <p class="slide-sub">Con todas las tarjetas de crédito. Acumulá puntos con tu banco.</p>
+        <button class="slide-cta" onclick="document.querySelector('.filters-bar').scrollIntoView({behavior:'smooth'})">Ver todo →</button>
+      </div>
+      <div class="slide-visual">💳</div>
+    </div>
+  </div>
+  <button class="slider-arrow slider-prev" onclick="moveSlide(-1)">←</button>
+  <button class="slider-arrow slider-next" onclick="moveSlide(1)">→</button>
+  <div class="slider-dots" id="sliderDots"></div>
+</div>
+
+<!-- ══ FILTROS ══ -->
+<div class="filters-bar">
+  <span class="filter-label">Animal:</span>
+  <div class="animal-filters">
+    <button class="animal-btn active" data-animal="todos" onclick="filterAnimal(this)">🐾 Todos</button>
+    <button class="animal-btn" data-animal="perro" onclick="filterAnimal(this)">🐶 Perro</button>
+    <button class="animal-btn" data-animal="gato" onclick="filterAnimal(this)">🐱 Gato</button>
+    <button class="animal-btn" data-animal="ave" onclick="filterAnimal(this)">🦜 Ave</button>
+    <button class="animal-btn" data-animal="conejo" onclick="filterAnimal(this)">🐰 Conejo</button>
+    <button class="animal-btn" data-animal="reptil" onclick="filterAnimal(this)">🦎 Reptil</button>
+    <button class="animal-btn" data-animal="pez" onclick="filterAnimal(this)">🐠 Pez</button>
+  </div>
+  <div class="divider"></div>
+  <div class="cat-filters">
+    <button class="cat-btn active" data-cat="todas" onclick="filterCat(this)">Todas</button>
+    <button class="cat-btn" data-cat="medicina" onclick="filterCat(this)">💊 Medicina</button>
+    <button class="cat-btn" data-cat="comida" onclick="filterCat(this)">🍖 Comida</button>
+    <button class="cat-btn" data-cat="baño" onclick="filterCat(this)">🛁 Baño</button>
+    <button class="cat-btn" data-cat="juguetes" onclick="filterCat(this)">🎾 Juguetes</button>
+    <button class="cat-btn" data-cat="ropa" onclick="filterCat(this)">👕 Ropa</button>
+    <button class="cat-btn" data-cat="camas" onclick="filterCat(this)">🛏️ Camas</button>
+    <button class="cat-btn" data-cat="comederos" onclick="filterCat(this)">🥣 Comederos</button>
+  </div>
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" placeholder="Buscar producto…" id="searchInput" oninput="renderProducts()">
+  </div>
+</div>
+
+<!-- ══ PRODUCTOS ══ -->
+<div class="shop-body">
+  <p class="results-info" id="resultsInfo"></p>
+  <div class="products-grid" id="productsGrid"></div>
+</div>
+
+<!-- ══ CARRITO ══ -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>🛒 Tu carrito</h2>
+    <button class="close-cart" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="emoji">🛒</div><p>Tu carrito está vacío</p></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <span class="cart-total-price" id="cartTotal">$0</span>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()">Elegir forma de pago →</button>
+  </div>
+</div>
+
+<!-- ══ MODAL PAGO ══ -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <!-- Formulario de pago -->
+    <div id="payFormSection">
+      <div class="modal-head">
+        <div><h2>💳 Finalizar compra</h2><p>Elegí tu método de pago preferido</p></div>
+        <button class="close-modal" onclick="closeModal('payModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="pay-summary">
+          <div>
+            <div class="pay-summary-label">Total a pagar</div>
+            <div class="pay-summary-total" id="payTotal">$0</div>
+            <div class="pay-summary-items" id="payItems"></div>
+          </div>
+          <span style="font-size:2.4rem">🛒</span>
+        </div>
+
+        <p class="section-label">Método de pago</p>
+        <div class="pay-methods" id="paymentMethods">
+          <div class="pay-method selected" onclick="selectPayMethod(this,'tarjeta-credito')">
+            <span class="pay-method-icon">💳</span>
+            <div><div class="pay-method-name">Tarjeta de crédito</div><div class="pay-method-sub">Hasta 12 cuotas</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'tarjeta-debito')">
+            <span class="pay-method-icon">💰</span>
+            <div><div class="pay-method-name">Tarjeta de débito</div><div class="pay-method-sub">Pago en 1 cuota</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'transferencia')">
+            <span class="pay-method-icon">🏦</span>
+            <div><div class="pay-method-name">Transferencia</div><div class="pay-method-sub">5% de descuento</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'mercadopago')">
+            <span class="pay-method-icon">📱</span>
+            <div><div class="pay-method-name">MercadoPago</div><div class="pay-method-sub">Hasta 6 cuotas</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'efectivo')">
+            <span class="pay-method-icon">💵</span>
+            <div><div class="pay-method-name">Efectivo</div><div class="pay-method-sub">Retiro en sucursal</div></div>
+          </div>
+          <div class="pay-method" onclick="selectPayMethod(this,'qr')">
+            <span class="pay-method-icon">📷</span>
+            <div><div class="pay-method-name">Código QR</div><div class="pay-method-sub">Cualquier billetera</div></div>
+          </div>
+        </div>
+
+        <!-- Cuotas -->
+        <div class="cuotas-section visible" id="cuotasSection">
+          <p class="section-label">Plan de cuotas</p>
+          <div class="cuotas-tabs">
+            <button class="cuota-tab active" onclick="setCuotaTipo(this,'sin')">✓ Sin interés</button>
+            <button class="cuota-tab" onclick="setCuotaTipo(this,'con')">Con interés</button>
+          </div>
+          <div class="cuotas-grid" id="cuotasGrid"></div>
+        </div>
+
+        <!-- Datos -->
+        <p class="section-label" style="margin-top:22px">Tus datos</p>
+        <div class="buyer-form">
+          <div class="form-row-2">
+            <div class="form-group"><label>Nombre</label><input type="text" id="buyerNombre" placeholder="Ana"></div>
+            <div class="form-group"><label>Apellido</label><input type="text" id="buyerApellido" placeholder="García"></div>
+          </div>
+          <div class="form-group"><label>Email</label><input type="email" id="buyerEmail" placeholder="ana@email.com"></div>
+          <div class="form-group"><label>Teléfono</label><input type="tel" id="buyerTel" placeholder="+54 341 000-0000"></div>
+          <div class="form-group"><label>Dirección de envío</label><input type="text" id="buyerDir" placeholder="Av. San Martín 1240, Rosario"></div>
+        </div>
+        <button class="confirm-btn" onclick="confirmPayment()">Confirmar compra →</button>
+      </div>
+    </div>
+
+    <!-- Pantalla de éxito -->
+    <div class="pay-success" id="paySuccessSection">
+      <div class="modal-head" style="justify-content:flex-end;padding-bottom:0">
+        <button class="close-modal" onclick="closeModal('payModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <span class="pay-success-icon">✅</span>
+        <h3>¡Compra confirmada!</h3>
+        <p>Te enviamos el comprobante a tu email.<br>Tu pedido llega en 2–5 días hábiles. 🐾</p>
+        <div class="pay-success-detail" id="paySuccessDetail"></div>
+        <button class="close-success-btn" onclick="closeModal('payModal')">Seguir comprando</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL REGISTRO ══ -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h2>👤 Crear cuenta</h2><p>Recibí ofertas exclusivas en tu email</p></div>
+      <button class="close-modal" onclick="closeModal('registerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="register-perks">
+        <div class="perk-item"><span class="perk-icon">📧</span><div class="perk-text"><strong>Ofertas por email</strong>Descuentos antes que nadie</div></div>
+        <div class="perk-item"><span class="perk-icon">🎁</span><div class="perk-text"><strong>Cupón de bienvenida</strong>10% off en tu primera compra</div></div>
+        <div class="perk-item"><span class="perk-icon">📦</span><div class="perk-text"><strong>Estado de pedidos</strong>Seguí tus compras en tiempo real</div></div>
+        <div class="perk-item"><span class="perk-icon">⭐</span><div class="perk-text"><strong>Programa de puntos</strong>Acumulá y canjeá en tu próxima compra</div></div>
+      </div>
+      <div class="register-form">
+        <div class="form-row-2">
+          <div class="form-group"><label>Nombre</label><input type="text" id="regNombre" placeholder="Ana"></div>
+          <div class="form-group"><label>Apellido</label><input type="text" id="regApellido" placeholder="García"></div>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="ana@email.com"></div>
+        <div class="form-group"><label>Contraseña</label><input type="password" id="regPass" placeholder="Mínimo 8 caracteres"></div>
+        <div class="form-group">
+          <label>¿Qué mascotas tenés?</label>
+          <div class="pets-check">
+            <button class="pet-check-btn" onclick="togglePet(this)">🐶 Perro</button>
+            <button class="pet-check-btn" onclick="togglePet(this)">🐱 Gato</button>
+            <button class="pet-check-btn" onclick="togglePet(this)">🦜 Ave</button>
+            <button class="pet-check-btn" onclick="togglePet(this)">🐰 Conejo</button>
+            <button class="pet-check-btn" onclick="togglePet(this)">🦎 Reptil</button>
+            <button class="pet-check-btn" onclick="togglePet(this)">🐠 Pez</button>
+          </div>
+        </div>
+        <div>
+          <label class="section-label">Notificaciones que quiero recibir</label>
+          <div class="notif-list" style="margin-top:10px">
+            <div class="check-row" onclick="toggleCheck(this)"><div class="custom-check checked">✓</div><span class="check-label">🔥 Ofertas y descuentos especiales</span></div>
+            <div class="check-row" onclick="toggleCheck(this)"><div class="custom-check checked">✓</div><span class="check-label">🆕 Nuevos productos y lanzamientos</span></div>
+            <div class="check-row" onclick="toggleCheck(this)"><div class="custom-check"></div><span class="check-label">📦 Estado de mis pedidos</span></div>
+            <div class="check-row" onclick="toggleCheck(this)"><div class="custom-check"></div><span class="check-label">💌 Newsletter mensual con tips veterinarios</span></div>
+          </div>
+        </div>
+        <button class="register-submit-btn" onclick="submitRegister()">Crear mi cuenta →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>© 2025 VetVida · Tienda Virtual</span>
+  <a href="index.html">← Volver al inicio</a>
+</footer>
+
+<script>
+  /* ══ LOADER ══ */
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('loader').classList.add('hidden'), 2000);
+  });
+
+  /* ══ CURSOR ══ */
+  const cursor = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+  (function loop(){ cursor.style.left=mx+'px'; cursor.style.top=my+'px'; rx+=(mx-rx)*.14; ry+=(my-ry)*.14; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+
+  /* ══ SLIDER ══ */
+  let currentSlide = 0;
+  const TOTAL = 4;
+  const track = document.getElementById('sliderTrack');
+  const dotsEl = document.getElementById('sliderDots');
+  for (let i=0; i<TOTAL; i++) {
+    const d = document.createElement('button');
+    d.className = 'slider-dot' + (i===0?' active':'');
+    d.onclick = () => goToSlide(i);
+    dotsEl.appendChild(d);
+  }
+  function goToSlide(n) {
+    currentSlide = (n+TOTAL)%TOTAL;
+    track.style.transform = `translateX(-${currentSlide*100}%)`;
+    document.querySelectorAll('.slider-dot').forEach((d,i) => d.classList.toggle('active', i===currentSlide));
+  }
+  function moveSlide(dir) { goToSlide(currentSlide+dir); }
+  let auto = setInterval(() => moveSlide(1), 5000);
+  document.querySelector('.slider-section').addEventListener('mouseenter', () => clearInterval(auto));
+  document.querySelector('.slider-section').addEventListener('mouseleave', () => { auto = setInterval(() => moveSlide(1), 5000); });
+  let tx=0;
+  track.addEventListener('touchstart', e => { tx=e.touches[0].clientX; });
+  track.addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50) moveSlide(d<0?1:-1); });
+
+  /* ══ CATÁLOGO ══ */
+  const PRODUCTOS = [
+    {id:1,  nombre:'Antiparasitario Interno',     cat:'medicina',  animales:['perro','gato'],          emoji:'💊', precio:3200,  desc:'Comprimidos para eliminar parásitos internos. Sabor carne.',   badge:'top' },
+    {id:2,  nombre:'Antipulgas y Garrapatas',     cat:'medicina',  animales:['perro','gato'],          emoji:'🧴', precio:4800,  desc:'Pipeta mensual de amplio espectro. Protección duradera.',      badge:'top' },
+    {id:3,  nombre:'Vitaminas para Aves',         cat:'medicina',  animales:['ave'],                   emoji:'💉', precio:2100,  desc:'Suplemento vitamínico en gotas para pájaros y loros.',         badge:null  },
+    {id:4,  nombre:'Probiótico Digestivo',        cat:'medicina',  animales:['perro','gato','conejo'], emoji:'🌿', precio:3600,  desc:'Restaura la flora intestinal. Ideal post-antibióticos.',       badge:'new' },
+    {id:5,  nombre:'Colirio Oftálmico',           cat:'medicina',  animales:['perro','gato'],          emoji:'👁️',precio:2800,  desc:'Limpieza y tratamiento de ojos. Fórmula suave.',              badge:null  },
+    {id:6,  nombre:'Calcio para Reptiles',        cat:'medicina',  animales:['reptil'],                emoji:'🦴', precio:1900,  desc:'Suplemento en polvo para espolvorear sobre el alimento.',      badge:null  },
+    {id:7,  nombre:'Omega 3 Pelaje Brillante',    cat:'medicina',  animales:['perro','gato'],          emoji:'✨', precio:4100,  desc:'Ácidos grasos esenciales para pelo y piel saludables.',        badge:'new' },
+    {id:8,  nombre:'Antibacterial Peces',         cat:'medicina',  animales:['pez'],                   emoji:'🐠', precio:1600,  desc:'Tratamiento de infecciones bacterianas en acuarios.',          badge:null  },
+    {id:9,  nombre:'Croquetas Premium Perro',     cat:'comida',    animales:['perro'],                 emoji:'🍖', precio:8500,  desc:'Alimento balanceado adulto. Sin colorantes. 3kg.',             badge:'top' },
+    {id:10, nombre:'Croquetas Gato Adulto',       cat:'comida',    animales:['gato'],                  emoji:'🐟', precio:7200,  desc:'Con atún y pollo. Enriquecida con taurina. 2kg.',              badge:'top' },
+    {id:11, nombre:'Alimento Húmedo Perro',       cat:'comida',    animales:['perro'],                 emoji:'🥫', precio:1200,  desc:'Lata con carne real. Ideal para complementar la dieta seca.',  badge:null  },
+    {id:12, nombre:'Alimento para Aves',          cat:'comida',    animales:['ave'],                   emoji:'🌾', precio:2400,  desc:'Mix de semillas y frutas deshidratadas. 1kg.',                 badge:null  },
+    {id:13, nombre:'Pellets para Conejos',        cat:'comida',    animales:['conejo'],                emoji:'🥕', precio:3100,  desc:'Alimento completo con heno, zanahoria y vegetales. 1,5kg.',    badge:'new' },
+    {id:14, nombre:'Alimento para Reptiles',      cat:'comida',    animales:['reptil'],                emoji:'🦗', precio:2700,  desc:'Grillos y tenebrios deshidratados. Alto valor proteico.',      badge:null  },
+    {id:15, nombre:'Snack Dental Perro',          cat:'comida',    animales:['perro'],                 emoji:'🦷', precio:2200,  desc:'Palitos masticables para higiene bucal. Pack x12.',            badge:'sale'},
+    {id:16, nombre:'Alimento Peces Tropicales',   cat:'comida',    animales:['pez'],                   emoji:'🐡', precio:1400,  desc:'Hojuelas premium para peces de agua cálida.',                  badge:null  },
+    {id:17, nombre:'Comida Gato Kitten',          cat:'comida',    animales:['gato'],                  emoji:'🍗', precio:6800,  desc:'Formulado para gatitos hasta 12 meses. 1,5kg.',                badge:'new' },
+    {id:18, nombre:'Shampoo Anti-Pulgas',         cat:'baño',      animales:['perro'],                 emoji:'🧴', precio:3400,  desc:'Con citronela y lavanda. 500ml. Ph neutro.',                   badge:'top' },
+    {id:19, nombre:'Shampoo para Gatos',          cat:'baño',      animales:['gato'],                  emoji:'🛁', precio:2900,  desc:'Fórmula suave sin alcohol. Para pelaje largo y corto.',        badge:null  },
+    {id:20, nombre:'Colonia para Mascotas',       cat:'baño',      animales:['perro','gato'],          emoji:'🌸', precio:2100,  desc:'Perfume de larga duración. Aroma lavanda y vainilla.',         badge:null  },
+    {id:21, nombre:'Cortaúñas Profesional',       cat:'baño',      animales:['perro','gato','conejo'], emoji:'✂️', precio:4200,  desc:'Acero inoxidable con guía de seguridad.',                     badge:null  },
+    {id:22, nombre:'Cepillo Cardador',            cat:'baño',      animales:['perro','gato'],          emoji:'🪮', precio:3100,  desc:'Púas redondeadas. Elimina pelo muerto eficazmente.',          badge:'new' },
+    {id:23, nombre:'Toallitas Húmedas',           cat:'baño',      animales:['perro','gato','conejo'], emoji:'🧻', precio:1800,  desc:'Pack x50. Sin alcohol. Para ojos, patas y cuerpo.',            badge:null  },
+    {id:24, nombre:'Secador Silencioso',          cat:'baño',      animales:['perro','gato'],          emoji:'💨', precio:18500, desc:'Bajo ruido para no asustar a tu mascota. 2 velocidades.',      badge:'new' },
+    {id:25, nombre:'Pelota Kong Rellenable',      cat:'juguetes',  animales:['perro'],                 emoji:'🎾', precio:5200,  desc:'Goma resistente. Rellená con premios.',                        badge:'top' },
+    {id:26, nombre:'Rascador para Gatos',         cat:'juguetes',  animales:['gato'],                  emoji:'🏗️',precio:12000, desc:'Torre con cuerda sisal, plataformas y juguete colgante.',     badge:'top' },
+    {id:27, nombre:'Juguete Interactivo Ave',     cat:'juguetes',  animales:['ave'],                   emoji:'🪀', precio:1900,  desc:'Espejo con campana y argollas de colores.',                    badge:null  },
+    {id:28, nombre:'Túnel para Conejos',          cat:'juguetes',  animales:['conejo'],                emoji:'🕳️',precio:3800,  desc:'Túnel plegable de tela. Estimula el instinto explorador.',    badge:'new' },
+    {id:29, nombre:'Puntero Láser',               cat:'juguetes',  animales:['gato'],                  emoji:'🔴', precio:2200,  desc:'5 figuras distintas y luz LED. Pilas incluidas.',              badge:null  },
+    {id:30, nombre:'Hueso de Cuero Crudo',        cat:'juguetes',  animales:['perro'],                 emoji:'🦴', precio:1400,  desc:'100% natural. Limpia los dientes y fortalece la mandíbula.',   badge:'sale'},
+    {id:31, nombre:'Pelota Sonajero Gato',        cat:'juguetes',  animales:['gato'],                  emoji:'🔔', precio:1100,  desc:'Con cascabel y plumas. Pack x6.',                              badge:null  },
+    {id:32, nombre:'Cueva para Reptil',           cat:'juguetes',  animales:['reptil'],                emoji:'🪨', precio:4400,  desc:'Resina apta para terrarios. Escondite natural.',               badge:null  },
+    {id:33, nombre:'Campera Polar Perro',         cat:'ropa',      animales:['perro'],                 emoji:'🧥', precio:7800,  desc:'Forro polar suave. Tallas XS a XL.',                           badge:'new' },
+    {id:34, nombre:'Sweater de Lana Gato',        cat:'ropa',      animales:['gato'],                  emoji:'🧶', precio:5500,  desc:'Tejido elástico. Para gatos que toleran ropa.',                badge:null  },
+    {id:35, nombre:'Capa Impermeable',            cat:'ropa',      animales:['perro'],                 emoji:'🌧️',precio:9200,  desc:'Ajustable con capucha. Ideal para días de lluvia.',            badge:'top' },
+    {id:36, nombre:'Zapatillas para Perro',       cat:'ropa',      animales:['perro'],                 emoji:'👟', precio:6400,  desc:'Pack x4. Suela antideslizante. Protege del frío.',             badge:'new' },
+    {id:37, nombre:'Disfraz Halloween',           cat:'ropa',      animales:['perro'],                 emoji:'🎃', precio:4800,  desc:'Diseño calabaza. Tallas S, M y L. Cierre velcro.',            badge:'sale'},
+    {id:38, nombre:'Pañuelo Bandana',             cat:'ropa',      animales:['perro','gato'],          emoji:'🪢', precio:1600,  desc:'Ajustable. Varios diseños. 100% algodón.',                     badge:null  },
+    {id:39, nombre:'Cama Cueva Polar',            cat:'camas',     animales:['perro','gato'],          emoji:'🛏️',precio:11500, desc:'Interior polar súper suave. Razas pequeñas.',                  badge:'top' },
+    {id:40, nombre:'Cama Ortopédica Grande',      cat:'camas',     animales:['perro'],                 emoji:'🛋️',precio:18000, desc:'Espuma viscoelástica para razas grandes y seniors.',          badge:'new' },
+    {id:41, nombre:'Hamaca para Gato',            cat:'camas',     animales:['gato'],                  emoji:'🌙', precio:5400,  desc:'Se cuelga en la ventana. Soporta hasta 8kg.',                  badge:'new' },
+    {id:42, nombre:'Nido para Aves',              cat:'camas',     animales:['ave'],                   emoji:'🪺', precio:2800,  desc:'Paja trenzada para canarios y periquitos.',                    badge:null  },
+    {id:43, nombre:'Casa de Mimbre Conejo',       cat:'camas',     animales:['conejo'],                emoji:'🏠', precio:7200,  desc:'Madera y mimbre. Natural y masticable.',                       badge:null  },
+    {id:44, nombre:'Cama Impermeable Perro',      cat:'camas',     animales:['perro'],                 emoji:'💧', precio:8900,  desc:'Funda lavable. Relleno antialérgico. Varios tamaños.',         badge:'sale'},
+    {id:45, nombre:'Comedero Automático',         cat:'comederos', animales:['perro','gato'],          emoji:'🥣', precio:22000, desc:'Dispensador programable con temporizador y pantalla LCD.',     badge:'new' },
+    {id:46, nombre:'Bebedero Fuente',             cat:'comederos', animales:['perro','gato'],          emoji:'⛲', precio:14500, desc:'Fuente circulante con filtro de carbón. 2 litros.',            badge:'top' },
+    {id:47, nombre:'Set Comedero + Bebedero',     cat:'comederos', animales:['perro','gato'],          emoji:'🫙', precio:6800,  desc:'Acero inoxidable antibacterial. Base antideslizante.',         badge:null  },
+    {id:48, nombre:'Comedero Colgante Aves',      cat:'comederos', animales:['ave'],                   emoji:'🐦', precio:1600,  desc:'Para jaulas. Acrílico transparente y fácil de limpiar.',       badge:null  },
+    {id:49, nombre:'Bebedero Biberón Conejo',     cat:'comederos', animales:['conejo'],                emoji:'🍶', precio:1900,  desc:'Tubo de acero inoxidable con boquilla de bola. 250ml.',        badge:null  },
+    {id:50, nombre:'Comedero Lento Antiansiedad', cat:'comederos', animales:['perro'],                 emoji:'🐌', precio:4200,  desc:'Laberinto que frena la ingesta. Mejora la digestión.',         badge:'new' },
+    {id:51, nombre:'Acuario Starter Kit',         cat:'comederos', animales:['pez'],                   emoji:'🐟', precio:32000, desc:'Acuario 20L con filtro, iluminación LED y termómetro.',        badge:'new' },
+    {id:52, nombre:'Terrario Reptil 60cm',        cat:'comederos', animales:['reptil'],                emoji:'🦎', precio:28000, desc:'Vidrio templado con ventilación y puerta frontal deslizante.',  badge:null  },
+  ];
+
+  /* ══ ESTADO ══ */
+  let activeAnimal='todos', activeCat='todas', cart=[];
+  let selPayMethod='tarjeta-credito', selCuotas=3, cuotaTipo='sin';
+
+  /* ══ FILTROS ══ */
+  function filterAnimal(btn) {
+    document.querySelectorAll('.animal-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); activeAnimal=btn.dataset.animal; renderProducts();
+  }
+  function filterCat(btn) {
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); activeCat=btn.dataset.cat; renderProducts();
+  }
+  function filterAndGo(cat) {
+    const btn = [...document.querySelectorAll('.cat-btn')].find(b=>b.dataset.cat===cat);
+    if(btn) filterCat(btn);
+    document.querySelector('.filters-bar').scrollIntoView({behavior:'smooth'});
+  }
+
+  /* ══ RENDER ══ */
+  function renderProducts() {
+    const q=document.getElementById('searchInput').value.toLowerCase().trim();
+    const grid=document.getElementById('productsGrid');
+    const ae={perro:'🐶',gato:'🐱',ave:'🦜',conejo:'🐰',reptil:'🦎',pez:'🐠'};
+    const filtered=PRODUCTOS.filter(p=>{
+      return (activeAnimal==='todos'||p.animales.includes(activeAnimal)) &&
+             (activeCat==='todas'||p.cat===activeCat) &&
+             (!q||p.nombre.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q));
+    });
+    document.getElementById('resultsInfo').innerHTML=`Mostrando <strong>${filtered.length}</strong> producto${filtered.length!==1?'s':''}`;
+    if(!filtered.length){ grid.innerHTML=`<div class="empty-state"><div class="emoji">🔍</div><h3>Sin resultados</h3><p>Probá cambiando los filtros.</p></div>`; return; }
+    grid.innerHTML=filtered.map(p=>{
+      const inCart=cart.find(c=>c.id===p.id);
+      const tags=p.animales.map(a=>`<span class="animal-tag">${ae[a]}</span>`).join('');
+      const badge=p.badge?`<span class="product-badge badge-${p.badge}">${p.badge==='new'?'Nuevo':p.badge==='sale'?'Oferta':'Popular'}</span>`:'';
+      return `<div class="product-card">
+        <div class="product-img">${badge}<div class="product-animal-tags">${tags}</div>${p.emoji}</div>
+        <div class="product-body"><p class="product-cat">${p.cat}</p><h3 class="product-name">${p.nombre}</h3><p class="product-desc">${p.desc}</p></div>
+        <div class="product-footer"><span class="product-price">$${p.precio.toLocaleString('es-AR')}</span>
+          <button class="add-btn ${inCart?'added':''}" onclick="addToCart(${p.id})">${inCart?'✓':'+'}</button>
+        </div></div>`;
+    }).join('');
+  }
+
+  /* ══ CARRITO ══ */
+  function addToCart(id) {
+    const p=PRODUCTOS.find(x=>x.id===id), ex=cart.find(c=>c.id===id);
+    ex?ex.qty++:cart.push({...p,qty:1});
+    updateCartUI(); renderProducts(); showToast(`🐾 ¡${p.nombre} agregado!`);
+  }
+  function removeFromCart(id){ cart=cart.filter(c=>c.id!==id); updateCartUI(); renderProducts(); }
+  function changeQty(id,delta){ const i=cart.find(c=>c.id===id); if(!i)return; i.qty+=delta; i.qty<=0?removeFromCart(id):updateCartUI(); }
+  function updateCartUI() {
+    const total=cart.reduce((s,c)=>s+c.precio*c.qty,0), count=cart.reduce((s,c)=>s+c.qty,0);
+    document.getElementById('cartCount').textContent=count;
+    document.getElementById('cartTotal').textContent=`$${total.toLocaleString('es-AR')}`;
+    const el=document.getElementById('cartItems');
+    if(!cart.length){ el.innerHTML=`<div class="cart-empty"><div class="emoji">🛒</div><p>Tu carrito está vacío</p></div>`; return; }
+    el.innerHTML=cart.map(c=>`<div class="cart-item">
+      <div class="cart-item-icon">${c.emoji}</div>
+      <div class="cart-item-info">
+        <p class="cart-item-name">${c.nombre}</p>
+        <p class="cart-item-price">$${(c.precio*c.qty).toLocaleString('es-AR')}</p>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+          <span class="qty-num">${c.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+          <button class="remove-item" onclick="removeFromCart(${c.id})">🗑️</button>
+        </div>
+      </div></div>`).join('');
+  }
+  function toggleCart(){ document.getElementById('cartPanel').classList.toggle('open'); document.getElementById('cartOverlay').classList.toggle('open'); }
+
+  /* ══ CHECKOUT ══ */
+  function openCheckout(){
+    if(!cart.length){ showToast('⚠️ Tu carrito está vacío'); return; }
+    toggleCart();
+    const total=cart.reduce((s,c)=>s+c.precio*c.qty,0), count=cart.reduce((s,c)=>s+c.qty,0);
+    document.getElementById('payTotal').textContent=`$${total.toLocaleString('es-AR')}`;
+    document.getElementById('payItems').textContent=`${count} producto${count!==1?'s':''}`;
+    selPayMethod='tarjeta-credito';
+    document.querySelectorAll('.pay-method').forEach((m,i)=>m.classList.toggle('selected',i===0));
+    document.getElementById('cuotasSection').classList.add('visible');
+    renderCuotas(total);
+    document.getElementById('payFormSection').style.display='';
+    document.getElementById('paySuccessSection').classList.remove('visible');
+    openModal('payModal');
+  }
+  function selectPayMethod(el,method){
+    document.querySelectorAll('.pay-method').forEach(m=>m.classList.remove('selected'));
+    el.classList.add('selected'); selPayMethod=method;
+    const show=['tarjeta-credito','mercadopago'].includes(method);
+    document.getElementById('cuotasSection').classList.toggle('visible',show);
+    if(show) renderCuotas(cart.reduce((s,c)=>s+c.precio*c.qty,0), method==='mercadopago'?6:12);
+  }
+  function setCuotaTipo(btn,tipo){
+    document.querySelectorAll('.cuota-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active'); cuotaTipo=tipo;
+    renderCuotas(cart.reduce((s,c)=>s+c.precio*c.qty,0), selPayMethod==='mercadopago'?6:12);
+  }
+  function renderCuotas(total, max=12){
+    const planes = cuotaTipo==='sin'
+      ? [{n:1,int:0},{n:3,int:0},{n:6,int:0},{n:12,int:0}]
+      : [{n:6,int:.08},{n:9,int:.15},{n:12,int:.22},{n:18,int:.35},{n:24,int:.50}];
+    document.getElementById('cuotasGrid').innerHTML = planes.filter(p=>p.n<=max).map(p=>{
+      const tf=total*(1+p.int), vc=Math.ceil(tf/p.n), isSel=selCuotas===p.n;
+      const bc=p.int===0?'sin':'con', bt=p.int===0?'Sin interés':`+${Math.round(p.int*100)}% interés`;
+      return `<div class="cuota-card ${isSel?'selected':''}" onclick="selectCuota(this,${p.n})">
+        <div class="cuota-num">${p.n}<span>x</span></div>
+        <div class="cuota-valor">$${vc.toLocaleString('es-AR')}/mes</div>
+        <span class="cuota-badge ${bc}">${bt}</span></div>`;
+    }).join('');
+  }
+  function selectCuota(el,n){ document.querySelectorAll('.cuota-card').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); selCuotas=n; }
+
+  function confirmPayment(){
+    const n=document.getElementById('buyerNombre').value.trim();
+    const a=document.getElementById('buyerApellido').value.trim();
+    const e=document.getElementById('buyerEmail').value.trim();
+    const t=document.getElementById('buyerTel').value.trim();
+    const d=document.getElementById('buyerDir').value.trim();
+    if(!n||!a||!e||!t||!d){ showToast('⚠️ Completá todos tus datos'); return; }
+    const total=cart.reduce((s,c)=>s+c.precio*c.qty,0);
+    const needsCuotas=['tarjeta-credito','mercadopago'].includes(selPayMethod);
+    const vc=needsCuotas?Math.ceil(total/selCuotas):null;
+    const mn={'tarjeta-credito':'Tarjeta de crédito','tarjeta-debito':'Tarjeta de débito','transferencia':'Transferencia bancaria','mercadopago':'MercadoPago','efectivo':'Efectivo','qr':'Código QR'};
+    document.getElementById('paySuccessDetail').innerHTML=`
+      <div><span>Comprador</span><span>${n} ${a}</span></div>
+      <div><span>Email</span><span>${e}</span></div>
+      <div><span>Método</span><span>${mn[selPayMethod]}</span></div>
+      ${needsCuotas?`<div><span>Plan</span><span>${selCuotas} cuota${selCuotas>1?'s':''} de $${vc.toLocaleString('es-AR')}</span></div>`:''}
+      <div><span>Total</span><span>$${total.toLocaleString('es-AR')}</span></div>`;
+    document.getElementById('payFormSection').style.display='none';
+    document.getElementById('paySuccessSection').classList.add('visible');
+    cart=[]; updateCartUI(); renderProducts();
+    // Limpiar campos
+    ['buyerNombre','buyerApellido','buyerEmail','buyerTel','buyerDir'].forEach(id=>document.getElementById(id).value='');
+  }
+
+  /* ══ MODALES ══ */
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') ['payModal','registerModal'].forEach(id=>document.getElementById(id).classList.remove('open')); });
+
+  /* ══ REGISTRO ══ */
+  function togglePet(btn){ btn.classList.toggle('selected'); }
+  function toggleCheck(row){
+    const c=row.querySelector('.custom-check'), chk=c.classList.toggle('checked');
+    c.textContent=chk?'✓':'';
+  }
+  function submitRegister(){
+    const n=document.getElementById('regNombre').value.trim();
+    const e=document.getElementById('regEmail').value.trim();
+    const p=document.getElementById('regPass').value;
+    if(!n||!e||!p){ showToast('⚠️ Completá nombre, email y contraseña'); return; }
+    if(p.length<8){ showToast('⚠️ La contraseña debe tener al menos 8 caracteres'); return; }
+    closeModal('registerModal');
+    showToast(`🎉 ¡Bienvenido/a, ${n}! Revisá tu email 📧`);
+    ['regNombre','regApellido','regEmail','regPass'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.pet-check-btn').forEach(b=>b.classList.remove('selected'));
+  }
+
+  /* ══ TOAST ══ */
+  function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+
+  /* ══ INIT ══ */
+  renderProducts();
+</script>
+</body>
+</html>
