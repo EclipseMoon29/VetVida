@@ -47,9 +47,6 @@ Tienda Virtual (tienda.html)
 TecnologíaUsoHTML5Estructura semánticaCSS3Estilos, animaciones, variables CSS, Grid & FlexboxJavaScript (ES6+)Lógica interactiva, DOM manipulationGoogle FontsTipografías: Playfair Display + DM SansIntersectionObserver APIScroll Reveal & contadores animadosrequestAnimationFrameCursor personalizado y animaciones fluidas
 Sin frameworks. Sin dependencias externas. Vanilla JS puro.
 
-🎨 Paleta de colores
-VariableColorUso--forest#2D4A3EColor principal (verde bosque)--terracotta#C4714AColor de acento (naranja ladrillo)--cream#F5F0E8Fondos cálidos--warm-white#FDFAF5Fondo base--charcoal#1C2520Texto oscuro / footer--sage#7BA899Sage / muted green--gold#C9A84CDetalles dorados
-
 🚀 Cómo usar
 
 Cloná o descargá el repositorio
