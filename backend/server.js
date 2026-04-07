@@ -22,7 +22,13 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middlewares ──────────────────────────────────────────────
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
+}));
+app.options('*', cors()); // Handle preflight requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -149,17 +155,20 @@ app.get('/api/dashboard', authMiddleware, async (req, res) => {
     const [[{ total_clientes }]]  = await pool.query('SELECT COUNT(*) AS total_clientes FROM clientes WHERE activo=TRUE');
     const [[{ turnos_hoy }]]      = await pool.query("SELECT COUNT(*) AS turnos_hoy FROM turnos WHERE fecha=CURDATE() AND estado!='cancelado'");
     const [[{ pedidos_pend }]]    = await pool.query("SELECT COUNT(*) AS pedidos_pend FROM pedidos WHERE estado IN ('pendiente','confirmado','preparando')");
-    const [stock_bajo]            = await pool.query('SELECT * FROM v_stock_bajo LIMIT 5');
+    const [[{ total_prods }]]     = await pool.query('SELECT COUNT(*) AS total_prods FROM productos WHERE activo=TRUE');
+    const [stock_bajo]            = await pool.query('SELECT * FROM v_stock_bajo');
     const [ultimos_pedidos]       = await pool.query('SELECT p.id, p.cliente_nombre, p.total, p.estado, p.metodo_pago, p.created_at FROM pedidos p ORDER BY p.created_at DESC LIMIT 6');
     const [turnos_hoy_lista]      = await pool.query('SELECT * FROM v_turnos_hoy LIMIT 6');
     const [ventas_chart]          = await pool.query('SELECT * FROM v_ventas_mes LIMIT 6');
+    const [metodos]               = await pool.query("SELECT metodo_pago, COUNT(*) AS pedidos, COALESCE(SUM(total),0) AS total FROM pedidos WHERE estado!='cancelado' GROUP BY metodo_pago ORDER BY total DESC");
 
     res.json({
-      stats: { total_pedidos, ingresos_mes, total_clientes, turnos_hoy, pedidos_pend },
+      stats: { total_pedidos, ingresos_mes, total_clientes, turnos_hoy, pedidos_pend, total_prods },
       stock_bajo,
       ultimos_pedidos,
       turnos_hoy: turnos_hoy_lista,
-      ventas_chart
+      ventas_chart,
+      metodos
     });
   } catch (err) {
     console.error(err);
@@ -296,6 +305,24 @@ app.post('/api/pedidos', async (req, res) => {
 //  CLIENTES
 // ============================================================
 
+// POST /api/clientes — registro público desde la tienda
+app.post('/api/clientes', async (req, res) => {
+  const { nombre, apellido, email, notif_ofertas, notif_novedades, notif_pedidos, notif_newsletter } = req.body;
+  if (!nombre || !email) return res.status(400).json({ error: 'Nombre y email requeridos' });
+  try {
+    const [exist] = await pool.query('SELECT id FROM clientes WHERE email = ?', [email]);
+    if (exist.length) return res.status(409).json({ error: 'Ya existe una cuenta con ese email' });
+    const [result] = await pool.query(
+      'INSERT INTO clientes (nombre, apellido, email, notif_ofertas, notif_novedades, notif_pedidos, notif_newsletter) VALUES (?,?,?,?,?,?,?)',
+      [nombre, apellido||'', email, notif_ofertas??true, notif_novedades??true, notif_pedidos??false, notif_newsletter??false]
+    );
+    res.json({ ok: true, id: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al registrar cliente' });
+  }
+});
+
 app.get('/api/clientes', authMiddleware, async (req, res) => {
   const { buscar } = req.query;
   let sql = `SELECT c.*, COUNT(DISTINCT m.id) AS cant_mascotas, COUNT(DISTINCT p.id) AS cant_pedidos
@@ -342,12 +369,41 @@ app.put('/api/turnos/:id/estado', authMiddleware, requirePermiso('turnos'), asyn
 
 // POST desde la web (público)
 app.post('/api/turnos', async (req, res) => {
-  const { cliente_nombre, cliente_tel, mascota_nombre, especie, servicio, fecha, hora, comentarios } = req.body;
-  const [result] = await pool.query(
-    'INSERT INTO turnos (cliente_nombre, cliente_tel, mascota_nombre, especie, servicio, fecha, hora, notas) VALUES (?,?,?,?,?,?,?,?)',
-    [cliente_nombre, cliente_tel, mascota_nombre, especie, servicio, fecha, hora, comentarios || null]
-  );
-  res.json({ ok: true, turno_id: result.insertId });
+  console.log('[POST /api/turnos] Body recibido:', req.body);
+  try {
+    const { cliente_nombre, cliente_tel, mascota_nombre, especie, servicio, fecha, hora, comentarios } = req.body;
+
+    // Validación de campos obligatorios
+    if (!cliente_nombre || !fecha || !hora || !servicio) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios: nombre, fecha, hora, servicio' });
+    }
+
+    // Normalizar especie al enum válido
+    const especiesValidas = ['perro','gato','ave','conejo','reptil','pez','otro'];
+    const especieNorm = (especie || '').toLowerCase();
+    const especieFinal = especiesValidas.includes(especieNorm) ? especieNorm : 'otro';
+
+    // Normalizar servicio al enum válido
+    const serviciosValidos = ['consulta-general','vacunacion','laboratorio','cirugia','imagen','estetica'];
+    const servicioNorm = (servicio || '').toLowerCase();
+    const servicioFinal = serviciosValidos.includes(servicioNorm) ? servicioNorm : 'consulta-general';
+
+    // Normalizar hora — acepta "09:00", "09:00:00", "09:00 - 10:00"
+    let horaFinal = hora.toString().split(' - ')[0].trim();
+    if (horaFinal.split(':').length === 2) horaFinal += ':00'; // "09:00" → "09:00:00"
+
+    const [result] = await pool.query(
+      'INSERT INTO turnos (cliente_nombre, cliente_tel, mascota_nombre, especie, servicio, fecha, hora, notas) VALUES (?,?,?,?,?,?,?,?)',
+      [cliente_nombre, cliente_tel || null, mascota_nombre || null, especieFinal, servicioFinal, fecha, horaFinal, comentarios || null]
+    );
+
+    console.log(`[POST /api/turnos] ✅ Turno creado ID=${result.insertId}`);
+    res.json({ ok: true, turno_id: result.insertId });
+
+  } catch (err) {
+    console.error('[POST /api/turnos] ❌ Error:', err.message);
+    res.status(500).json({ error: 'Error al guardar el turno: ' + err.message });
+  }
 });
 
 

@@ -6,21 +6,11 @@
   <title>VetVida — Clínica Veterinaria</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="api.js" defer></script>
+  <!-- Favicon patita -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
 <body>
-    <div id="loader">
-  <div class="loader-logo">Vet<span>Vida</span></div>
-  <div class="loader-paws">
-    <span class="loader-paw">🐾</span>
-    <span class="loader-paw">🐾</span>
-    <span class="loader-paw">🐾</span>
-    <span class="loader-paw">🐾</span>
-  </div>
-  <div class="loader-bar-wrap">
-    <div class="loader-bar"></div>
-  </div>
-  <p class="loader-text">Cargando la clínica…</p>
-</div>
 
   <!-- ══════════════════════════════
        CURSOR PERSONALIZADO
@@ -45,7 +35,6 @@
       <li><a href="#turnos" class="nav-cta">Reservar turno</a></li>
     </ul>
   </nav>
-  
 
   <!-- ══════════════════════════════
        HERO
@@ -144,6 +133,11 @@
         <p>Baño, peluquería y arreglo de uñas. Dejamos a tu mascota impecable y feliz.</p>
         <span class="service-price">Desde $5.000</span>
       </div>
+      <div class="service-card service-card--shop reveal" style="transition-delay:.35s">
+        <div class="service-icon">🛒</div>
+        <h3>Tienda Virtual</h3>
+        <p>Medicina, comida, juguetes, ropa, camas y más. Todo para perros, gatos, aves, conejos y reptiles.</p>
+        <a href="tienda.html" class="service-shop-btn">Ir a la tienda →</a>
       </div>
     </div>
   </section>
@@ -387,6 +381,6 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>

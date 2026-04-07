@@ -21,11 +21,6 @@
    El cursor principal sigue exactamente al mouse.
    El anillo exterior va con un pequeño retraso (efecto lag).
 */
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('hidden');
-  }, 2000);
-});
 const cursor     = document.getElementById('cursor');
 const cursorRing = document.getElementById('cursor-ring');
 
@@ -220,30 +215,78 @@ if (dateInput) {
    bloque de "Simulación de éxito" por un fetch() o
    una llamada a tu API.
 */
-function submitForm() {
+async function submitForm() {
   // ── Recolectar valores ──
-  const nombre    = document.getElementById('f-nombre').value.trim();
-  const tel       = document.getElementById('f-tel').value.trim();
-  const mascota   = document.getElementById('f-mascota').value.trim();
-  const especie   = document.getElementById('f-especie').value;
-  const servicio  = document.getElementById('f-servicio').value;
-  const fecha     = document.getElementById('f-fecha').value;
-  const horario   = document.getElementById('f-horario').value;
+  const nombre      = document.getElementById('f-nombre').value.trim();
+  const tel         = document.getElementById('f-tel').value.trim();
+  const mascota     = document.getElementById('f-mascota').value.trim();
+  const especie     = document.getElementById('f-especie').value;
+  const servicio    = document.getElementById('f-servicio').value;
+  const fecha       = document.getElementById('f-fecha').value;
+  const horario     = document.getElementById('f-horario').value;
+  const comentarios = document.getElementById('f-comentarios')?.value.trim() || '';
 
   // ── Validación ──
-  const todosCompletos = nombre && tel && mascota && especie && servicio && fecha && horario;
-
-  if (!todosCompletos) {
+  if (!nombre || !tel || !mascota || !especie || !servicio || !fecha || !horario) {
     showToast('⚠️ Por favor completá todos los campos', 'error');
     return;
   }
 
-  // ── Simulación de éxito ──
-  // En producción: reemplazar con fetch('/api/turnos', { method: 'POST', body: ... })
-  showToast(`🐾 ¡Turno reservado! Te confirmamos pronto, ${nombre}.`, 'success');
+  // ── Deshabilitar botón mientras se envía ──
+  const btn = document.querySelector('.btn-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
 
-  // Limpiar el formulario
-  limpiarFormulario();
+  // Mapear servicio al enum del backend
+  const servicioMap = {
+    'Consulta general':       'consulta-general',
+    'Vacunación':             'vacunacion',
+    'Laboratorio':            'laboratorio',
+    'Cirugía':                'cirugia',
+    'Diagnóstico por imagen': 'imagen',
+    'Estética':               'estetica',
+  };
+
+  // Normalizar hora: "09:00 - 10:00" → "09:00:00"
+  let horaFinal = horario.split(' - ')[0].trim();
+  if (horaFinal.split(':').length === 2) horaFinal += ':00';
+
+  const payload = {
+    cliente_nombre: nombre,
+    cliente_tel:    tel,
+    mascota_nombre: mascota,
+    especie:        especie.toLowerCase(),
+    servicio:       servicioMap[servicio] || 'consulta-general',
+    fecha,
+    hora:           horaFinal,
+    comentarios,
+  };
+
+  console.log('[VetVida] Enviando turno:', payload);
+
+  // ── Enviar al backend ──
+  const result = await VetAPI.crearTurno(payload);
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Reservar turno →'; }
+
+  console.log('[VetVida] Respuesta del servidor:', result);
+
+  if (result.ok) {
+    showToast(`🐾 ¡Turno #${result.data.turno_id} reservado! Te confirmamos pronto, ${nombre}.`, 'success');
+    limpiarFormulario();
+  } else if (result.offline) {
+    // Sin servidor: guardar localmente con aviso claro
+    guardarTurnoLocal(payload);
+    showToast('⚠️ Sin conexión al servidor. El turno se guardó localmente — iniciá el backend con "npm run dev".', 'error');
+  } else {
+    showToast(`⚠️ ${result.data.error || 'Error al reservar. Revisá la consola.'}`, 'error');
+  }
+}
+
+/* Guarda el turno en localStorage si el servidor no está disponible */
+function guardarTurnoLocal(payload) {
+  const pendientes = JSON.parse(localStorage.getItem('vv_turnos_pendientes') || '[]');
+  pendientes.push({ ...payload, guardadoEn: new Date().toISOString() });
+  localStorage.setItem('vv_turnos_pendientes', JSON.stringify(pendientes));
 }
 
 
