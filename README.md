@@ -3,7 +3,7 @@
 Sitio web profesional para clínica veterinaria con sistema de turnos online y tienda de productos para mascotas.
 
 📋 Descripción
-VetVida es un sitio web completo para una clínica veterinaria ficticia ubicada en Reconquista Santa fe, Argentina. El proyecto está compuesto por dos páginas principales: una landing page institucional con formulario de reserva de turnos, y una tienda virtual con catálogo de productos, carrito de compras y sistema de pago simulado.
+VetVida es un sitio web completo para una clínica veterinaria ficticia ubicada en Rosario Santa fe, Argentina. El proyecto está compuesto por dos páginas principales: una landing page institucional con formulario de reserva de turnos, y una tienda virtual con catálogo de productos, carrito de compras y sistema de pago simulado.
 
 🗂️ Estructura del proyecto
 vetvida/
@@ -44,11 +44,8 @@ Tienda Virtual (tienda.html)
 
 
 🎨 Stack tecnológico
-TecnologíaUsoHTML5Estructura semánticaCSS3Estilos, animaciones, variables CSS, Grid & FlexboxJavaScript (ES6+)Lógica interactiva, DOM manipulationGoogle FontsTipografías: Playfair Display + DM SansIntersectionObserver APIScroll Reveal & contadores animadosrequestAnimationFrameCursor personalizado y animaciones fluidas
+Tecnología usada: HTML5 Estructura semántica: CSS3 Estilos, animaciones, variables CSS, Grid & FlexboxJavaScript (ES6+) Lógica interactiva, DOM manipulationGoogle FontsTipografías: Playfair Display + DM SansIntersectionObserver APIScroll Reveal & contadores animadosrequestAnimationFrameCursor personalizado y animaciones fluidas
 Sin frameworks. Sin dependencias externas. Vanilla JS puro.
-
-🎨 Paleta de colores
-VariableColorUso--forest#2D4A3EColor principal (verde bosque)--terracotta#C4714AColor de acento (naranja ladrillo)--cream#F5F0E8Fondos cálidos--warm-white#FDFAF5Fondo base--charcoal#1C2520Texto oscuro / footer--sage#7BA899Sage / muted green--gold#C9A84CDetalles dorados
 
 🚀 Cómo usar
 
@@ -78,23 +75,6 @@ El catálogo incluye 52 productos distribuidos en 8 categorías:
 🥣 Comederos — Automáticos, fuentes, bebederos
 Animales cubiertos: 🐶 Perro · 🐱 Gato · 🦜 Ave · 🐰 Conejo · 🦎 Reptil · 🐠 Pez
 
-🔧 Personalización
-Cambiar datos de contacto
-Editá directamente en index.html, sección #turnos > .turno-info:
-html<div class="contact-item">📞 (0341) 456-7890</div>
-<div class="contact-item">📧 hola@vetvida.com.ar</div>
-<div class="contact-item">📍 Av. San Martín 1240, Rosario</div>
-Cambiar paleta de colores
-Modificá las variables en :root en styles.css:
-css:root {
-  --forest:      #2D4A3E;  /* Color principal */
-  --terracotta:  #C4714A;  /* Color de acento */
-}
-Agregar productos a la tienda
-Agregá un objeto al array PRODUCTOS en tienda.html:
-javascript{ id: 53, nombre: 'Nuevo Producto', cat: 'comida', animales: ['perro'],
-  emoji: '🍗', precio: 3500, desc: 'Descripción breve.', badge: 'new' }
-
 📱 Responsive
 El sitio está optimizado para:
 📱 Mobile (< 500px)
@@ -102,7 +82,7 @@ El sitio está optimizado para:
 🖥️ Desktop (> 900px)
 
 🏥 Información de la clínica (ficticia)
-DatoInformaciónNombreVetVidaDirecciónAv. San Martín 1240, RosarioTeléfono(0341) 456-7890WhatsApp+54 9 341 456-7890Emailhola@vetvida.com.arEmergencias0800-555-VETHorarioLun–Vie 9:00–20:00 · Sáb 9:00–14:00Emergencias24/7Fundación2008
+Dato-Información-Nombre VetVida-DirecciónAv. San Martín 1240, Rosario - Teléfono(0341) 456-7890 - WhatsApp+54 9 341 456-7890 - Emailhola@vetvida.com.ar - Emergencias0800-555-VET - Horario - Lun–Vie 9:00–20:00 · Sáb 9:00–14:00 - Emergencias24/7 - Fundación2008
 
 👩‍⚕️ Equipo médico (ficticio)
 
