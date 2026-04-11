@@ -314,10 +314,10 @@
       <button class="login-btn" onclick="doLogin()">Ingresar al sistema →</button>
       <div class="login-roles">
         <strong>Cuentas de demostración (contraseña: VetVida2025!)</strong>
-        dueno@vetvida.com — Dueño · acceso total<br>
-        admin@vetvida.com — Administrador<br>
-        vet@vetvida.com — Veterinario<br>
-        empleado@vetvida.com — Empleado
+        <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e1a0b1b10113e081b0a08171a1f501d1113">[email&#160;protected]</a> — Dueño · acceso total<br>
+        <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8aebeee7e3e4cafceffefce3eeeba4e9e5e7">[email&#160;protected]</a> — Administrador<br>
+        <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1c6a79685c6a79686a75787d327f7371">[email&#160;protected]</a> — Veterinario<br>
+        <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="395c5449555c585d56794f5c4d4f505d58175a5654">[email&#160;protected]</a> — Empleado
       </div>
     </div>
   </div>
@@ -385,6 +385,7 @@
         <div class="topbar-chip"><span class="dot-live"></span> En vivo</div>
         <div class="topbar-chip" id="topRol">—</div>
         <div class="topbar-chip" id="topDate">—</div>
+      <button onclick="refreshActual()" style="border:none;background:var(--forest);color:white;font-weight:700;padding:6px 14px;border-radius:50px;font-size:.76rem;display:flex;align-items:center;gap:5px">🔄 Actualizar</button>
       </div>
     </div>
 
@@ -654,7 +655,7 @@
 
 <div id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════════
 //  CONFIG & HELPERS
 //  ⚠️ Si el backend corre en otro puerto, cambiá esta URL
@@ -769,6 +770,8 @@ function initApp(){
 
   loadCats();
   loadDashboard();
+  checkConnection();
+  setInterval(checkConnection, 15000);
 }
 
 function go(name){
@@ -850,29 +853,43 @@ async function loadDashboard(){
     ['#e53935','Sin stock',sinStock],
   ].map(([c,l,v])=>`<div style="display:flex;align-items:center;gap:7px"><div style="width:10px;height:10px;border-radius:3px;background:${c};flex-shrink:0"></div><span style="color:var(--text-muted)">${l}</span><strong style="margin-left:auto">${v}</strong></div>`).join('');
 
-  // Turnos por servicio (simulado desde los turnos de hoy)
-  const servicios=['Consulta','Vacunación','Laboratorio','Cirugía','Imagen','Estética'];
-  const servData =[3,2,1,1,1,2]; // En producción vendría del API
-  makeChart('chartTurnos','polarArea',servicios,
-    [{data:servData,backgroundColor:PALETTE.map(c=>c+'bb'),borderWidth:0}],
-  );
+  // Turnos por servicio — datos reales de la BD
+  const svcLabel={'consulta-general':'Consulta','vacunacion':'Vacunación','laboratorio':'Laboratorio','cirugia':'Cirugía','imagen':'Imagen','estetica':'Estética'};
+  const tps = d.turnos_por_servicio || [];
+  if(tps.length){
+    makeChart('chartTurnos','polarArea',
+      tps.map(t=>svcLabel[t.servicio]||t.servicio),
+      [{data:tps.map(t=>Number(t.total)),backgroundColor:PALETTE.map(c=>c+'bb'),borderWidth:0}]
+    );
+  } else {
+    // Sin datos aún — mostrar placeholder
+    makeChart('chartTurnos','polarArea',['Sin turnos aún'],[{data:[1],backgroundColor:['#eee'],borderWidth:0}]);
+  }
 
-  // Pendientes
-  const pendientes = [...(d.ultimos_pedidos||[]).filter(p=>p.estado==='pendiente'),
-                      ...(d.turnos_hoy||[]).filter(t=>t.estado==='pendiente'||t.estado==='confirmado')];
-  $('pendienteCount').textContent = pendientes.length;
-  $('pendientesList').innerHTML = pendientes.slice(0,6).map(item=>{
-    const isPedido = !!item.metodo_pago;
-    const color = isPedido ? COLORS.terra : COLORS.sage;
-    return `<div class="tl-item">
-      <div class="tl-dot" style="background:${color}"></div>
+  // Pendientes — combina pedidos pendientes + turnos próximos (datos reales)
+  const pedPend = (d.ultimos_pedidos||[]).filter(p=>p.estado==='pendiente');
+  const turPend = d.turnos_pendientes || [];
+  const totalPend = pedPend.length + turPend.length;
+  $('pendienteCount').textContent = totalPend;
+  const pedHTML = pedPend.map(p=>`
+    <div class="tl-item">
+      <div class="tl-dot" style="background:${COLORS.terra}"></div>
       <div class="tl-body">
-        <div class="tl-title">${isPedido?'🛒 Pedido #'+item.id:'📅 Turno: '+item.mascota_nombre}</div>
-        <div class="tl-sub">${item.cliente_nombre||item.especie||'—'}</div>
+        <div class="tl-title">🛒 Pedido #${p.id}</div>
+        <div class="tl-sub">${p.cliente_nombre} · $${fmt(p.total)}</div>
       </div>
-      <div class="tl-time">${isPedido?fmtDate(item.created_at):fmtHora(item.hora)}</div>
-    </div>`;
-  }).join('') || '<div class="empty"><div class="empty-icon">✅</div>Sin pendientes</div>';
+      <div class="tl-time">${fmtDate(p.created_at)}</div>
+    </div>`).join('');
+  const turHTML = turPend.map(t=>`
+    <div class="tl-item">
+      <div class="tl-dot" style="background:${COLORS.sage}"></div>
+      <div class="tl-body">
+        <div class="tl-title">📅 ${t.mascota_nombre||'Mascota'} — ${t.cliente_nombre}</div>
+        <div class="tl-sub">${({'consulta-general':'Consulta','vacunacion':'Vacunación','laboratorio':'Laboratorio','cirugia':'Cirugía','imagen':'Imagen','estetica':'Estética'})[t.servicio]||t.servicio} · ${t.especie}</div>
+      </div>
+      <div class="tl-time">${fmtDate(t.fecha)} ${fmtHora(t.hora)}</div>
+    </div>`).join('');
+  $('pendientesList').innerHTML = (pedHTML + turHTML) || '<div class="empty"><div class="empty-icon">✅</div>Sin pendientes esta semana</div>';
 
   // Últimos pedidos tabla
   $('dashPedidos').innerHTML = (d.ultimos_pedidos||[]).map(p=>`
@@ -880,7 +897,7 @@ async function loadDashboard(){
     <td>${fmtARS(p.total)}</td>
     <td><span class="badge b-${p.estado}">${p.estado}</span></td>
     <td style="font-size:.76rem;color:var(--text-muted)">${fmtDate(p.created_at)}</td></tr>`
-  ).join('') || '<tr><td colspan="5" class="empty">Sin pedidos</td></tr>';
+  ).join('') || '<tr><td colspan="5" class="empty">Sin pedidos aún — las compras de la tienda aparecerán aquí 🛒</td></tr>';
 
   // Stock bajo tabla
   $('dashStock').innerHTML = (d.stock_bajo||[]).length
@@ -1079,7 +1096,9 @@ async function delProducto(id){
 // ══════════════════════════════════════════════
 async function loadTurnos(){
   const fecha=$('turnoFecha').value;
-  const d = await api(`/api/turnos?fecha=${fecha}&estado=${turnoEstado}`);
+  // Si hay fecha seleccionada filtra por ese día, si no muestra todos los próximos 30 días
+  const fechaParam = fecha ? `&fecha=${fecha}` : '';
+  const d = await api(`/api/turnos?estado=${turnoEstado}${fechaParam}`);
   if(!d) return;
   const svcLabel={
     'consulta-general':'Consulta','vacunacion':'Vacunación',
@@ -1171,13 +1190,58 @@ document.addEventListener('click', e=>{ if(e.target.classList.contains('modal-ov
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open')); });
 
 // ══════════════════════════════════════════════
+//  ESTADO DE CONEXIÓN
+// ══════════════════════════════════════════════
+async function checkConnection(){
+  const dot  = document.getElementById('connDot');
+  const text = document.getElementById('connText');
+  if(!dot||!text) return;
+  try{
+    const r = await fetch(API+'/api/categorias',{headers:{'Authorization':'Bearer '+TOKEN}});
+    if(r.ok){ dot.style.background='#43a047'; text.textContent='Conectado · MySQL ✅'; }
+    else     { dot.style.background='#fb8c00'; text.textContent='Sin autorización ('+r.status+')'; }
+  }catch{
+    dot.style.background='#e53935';
+    text.textContent='Sin conexión al servidor';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  REFRESH MANUAL
+// ══════════════════════════════════════════════
+function refreshActual(){
+  const sec = document.querySelector('.section.active')?.id?.replace('sec-','');
+  const map = {
+    dashboard: loadDashboard,
+    ventas:    loadVentas,
+    pedidos:   ()=>loadPedidos(),
+    stock:     loadStock,
+    turnos:    loadTurnos,
+    clientes:  ()=>loadClientes(),
+    empleados: loadEmpleados,
+  };
+  if(map[sec]) map[sec]();
+  toast('✅ Datos actualizados');
+}
+
+// ══════════════════════════════════════════════
 //  BOOT
 // ══════════════════════════════════════════════
-// Fecha por defecto en filtro de turnos = hoy
 const hoy = new Date().toISOString().split('T')[0];
 if($('turnoFecha')) $('turnoFecha').value = hoy;
 
 if(TOKEN && USER) initApp();
+
+// Auto-refresh cada 30 segundos
+setInterval(()=>{
+  const sec = document.querySelector('.section.active')?.id;
+  if(!TOKEN) return;
+  if(sec==='sec-dashboard') loadDashboard();
+  if(sec==='sec-pedidos')   loadPedidos();
+  if(sec==='sec-turnos')    loadTurnos();
+  if(sec==='sec-clientes')  loadClientes();
+}, 30000);
+
 </script>
 </body>
 </html>

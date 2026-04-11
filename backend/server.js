@@ -38,8 +38,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 const pool = mysql.createPool({
   host:     process.env.DB_HOST     || 'localhost',
   port:     process.env.DB_PORT     || 3306,
-  user:     process.env.DB_USER     || 'root',
-  password: process.env.DB_PASSWORD || '',
+  user:     process.env.DB_USER     || 'Yae',
+  password: process.env.DB_PASSWORD || 'Tonytony2729ynmc!',
   database: process.env.DB_NAME     || 'vetvida_db',
   waitForConnections: true,
   connectionLimit:    10,
@@ -162,13 +162,31 @@ app.get('/api/dashboard', authMiddleware, async (req, res) => {
     const [ventas_chart]          = await pool.query('SELECT * FROM v_ventas_mes LIMIT 6');
     const [metodos]               = await pool.query("SELECT metodo_pago, COUNT(*) AS pedidos, COALESCE(SUM(total),0) AS total FROM pedidos WHERE estado!='cancelado' GROUP BY metodo_pago ORDER BY total DESC");
 
+    // Turnos por servicio — datos reales para el gráfico polar
+    const [turnos_por_servicio] = await pool.query(`
+      SELECT servicio, COUNT(*) AS total
+      FROM turnos WHERE estado != 'cancelado'
+      GROUP BY servicio ORDER BY total DESC
+    `);
+
+    // Turnos pendientes próximos 7 días — para la timeline
+    const [turnos_pendientes] = await pool.query(`
+      SELECT t.id, t.fecha, t.hora, t.servicio, t.estado,
+             t.cliente_nombre, t.mascota_nombre, t.especie,
+             CONCAT(IFNULL(u.nombre,''), ' ', IFNULL(u.apellido,'')) AS veterinario
+      FROM turnos t LEFT JOIN usuarios u ON t.veterinario_id = u.id
+      WHERE t.estado IN ('pendiente','confirmado')
+        AND t.fecha >= CURDATE()
+        AND t.fecha <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+      ORDER BY t.fecha ASC, t.hora ASC LIMIT 10
+    `);
+
     res.json({
       stats: { total_pedidos, ingresos_mes, total_clientes, turnos_hoy, pedidos_pend, total_prods },
-      stock_bajo,
-      ultimos_pedidos,
+      stock_bajo, ultimos_pedidos,
       turnos_hoy: turnos_hoy_lista,
-      ventas_chart,
-      metodos
+      ventas_chart, metodos,
+      turnos_por_servicio, turnos_pendientes
     });
   } catch (err) {
     console.error(err);
@@ -233,14 +251,19 @@ app.delete('/api/productos/:id', authMiddleware, requirePermiso('productos'), as
 // ============================================================
 
 app.get('/api/pedidos', authMiddleware, async (req, res) => {
-  const { estado, buscar } = req.query;
-  let sql = 'SELECT p.*, COUNT(pi.id) AS cant_items FROM pedidos p LEFT JOIN pedido_items pi ON p.id=pi.pedido_id WHERE 1=1';
-  const params = [];
-  if (estado)  { sql += ' AND p.estado = ?'; params.push(estado); }
-  if (buscar)  { sql += ' AND (p.cliente_nombre LIKE ? OR p.cliente_email LIKE ?)'; params.push(`%${buscar}%`, `%${buscar}%`); }
-  sql += ' GROUP BY p.id ORDER BY p.created_at DESC';
-  const [rows] = await pool.query(sql, params);
-  res.json(rows);
+  try {
+    const { estado, buscar } = req.query;
+    let sql = 'SELECT p.*, COUNT(pi.id) AS cant_items FROM pedidos p LEFT JOIN pedido_items pi ON p.id=pi.pedido_id WHERE 1=1';
+    const params = [];
+    if (estado)  { sql += ' AND p.estado = ?'; params.push(estado); }
+    if (buscar)  { sql += ' AND (p.cliente_nombre LIKE ? OR p.cliente_email LIKE ?)'; params.push(`%${buscar}%`, `%${buscar}%`); }
+    sql += ' GROUP BY p.id ORDER BY p.created_at DESC';
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
+  } catch(err) {
+    console.error('[GET /api/pedidos]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/pedidos/:id', authMiddleware, async (req, res) => {
@@ -260,6 +283,7 @@ app.put('/api/pedidos/:id/estado', authMiddleware, requirePermiso('pedidos'), as
 
 // POST desde la tienda (público)
 app.post('/api/pedidos', async (req, res) => {
+  console.log('[POST /api/pedidos] Body recibido:', JSON.stringify(req.body).slice(0,200));
   const { cliente_nombre, cliente_email, cliente_tel, direccion_envio, metodo_pago, cuotas, items } = req.body;
   if (!items?.length) return res.status(400).json({ error: 'Sin items' });
 
@@ -307,6 +331,7 @@ app.post('/api/pedidos', async (req, res) => {
 
 // POST /api/clientes — registro público desde la tienda
 app.post('/api/clientes', async (req, res) => {
+  console.log('[POST /api/clientes] Body recibido:', req.body);
   const { nombre, apellido, email, notif_ofertas, notif_novedades, notif_pedidos, notif_newsletter } = req.body;
   if (!nombre || !email) return res.status(400).json({ error: 'Nombre y email requeridos' });
   try {
@@ -324,17 +349,22 @@ app.post('/api/clientes', async (req, res) => {
 });
 
 app.get('/api/clientes', authMiddleware, async (req, res) => {
-  const { buscar } = req.query;
-  let sql = `SELECT c.*, COUNT(DISTINCT m.id) AS cant_mascotas, COUNT(DISTINCT p.id) AS cant_pedidos
-             FROM clientes c
-             LEFT JOIN mascotas m ON c.id = m.cliente_id
-             LEFT JOIN pedidos  p ON c.id = p.cliente_id
-             WHERE c.activo = TRUE`;
-  const params = [];
-  if (buscar) { sql += ' AND (c.nombre LIKE ? OR c.email LIKE ? OR c.apellido LIKE ?)'; params.push(`%${buscar}%`, `%${buscar}%`, `%${buscar}%`); }
-  sql += ' GROUP BY c.id ORDER BY c.created_at DESC';
-  const [rows] = await pool.query(sql, params);
-  res.json(rows);
+  try {
+    const { buscar } = req.query;
+    let sql = `SELECT c.*, COUNT(DISTINCT m.id) AS cant_mascotas, COUNT(DISTINCT p.id) AS cant_pedidos
+               FROM clientes c
+               LEFT JOIN mascotas m ON c.id = m.cliente_id
+               LEFT JOIN pedidos  p ON c.id = p.cliente_id
+               WHERE c.activo = TRUE`;
+    const params = [];
+    if (buscar) { sql += ' AND (c.nombre LIKE ? OR c.email LIKE ? OR c.apellido LIKE ?)'; params.push(`%${buscar}%`, `%${buscar}%`, `%${buscar}%`); }
+    sql += ' GROUP BY c.id ORDER BY c.created_at DESC';
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
+  } catch(err) {
+    console.error('[GET /api/clientes]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/clientes/:id', authMiddleware, async (req, res) => {
@@ -351,15 +381,21 @@ app.get('/api/clientes/:id', authMiddleware, async (req, res) => {
 // ============================================================
 
 app.get('/api/turnos', authMiddleware, async (req, res) => {
-  const { fecha, estado } = req.query;
-  let sql = `SELECT t.*, CONCAT(u.nombre,' ',u.apellido) AS veterinario
-             FROM turnos t LEFT JOIN usuarios u ON t.veterinario_id=u.id WHERE 1=1`;
-  const params = [];
-  if (fecha)  { sql += ' AND t.fecha = ?';   params.push(fecha); }
-  if (estado) { sql += ' AND t.estado = ?';  params.push(estado); }
-  sql += ' ORDER BY t.fecha, t.hora';
-  const [rows] = await pool.query(sql, params);
-  res.json(rows);
+  try {
+    const { fecha, estado } = req.query;
+    let sql = `SELECT t.*, CONCAT(IFNULL(u.nombre,''), ' ', IFNULL(u.apellido,'')) AS veterinario
+               FROM turnos t LEFT JOIN usuarios u ON t.veterinario_id=u.id WHERE 1=1`;
+    const params = [];
+    if (fecha)  { sql += ' AND t.fecha = ?';  params.push(fecha); }
+    // Sin filtro de fecha: muestra todos (pasados y futuros)
+    if (estado) { sql += ' AND t.estado = ?'; params.push(estado); }
+    sql += ' ORDER BY t.fecha DESC, t.hora DESC LIMIT 200';
+    const [rows] = await pool.query(sql, params);
+    res.json(rows);
+  } catch(err) {
+    console.error('[GET /api/turnos]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.put('/api/turnos/:id/estado', authMiddleware, requirePermiso('turnos'), async (req, res) => {

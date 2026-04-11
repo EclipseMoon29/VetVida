@@ -1,11 +1,3 @@
-/* ============================================================
-   VETVIDA — API CLIENT (api.js)
-   Archivo compartido por index.html, tienda.html y cualquier
-   página que necesite hablar con el backend.
-
-   Cambiá BASE_URL si el backend corre en otro puerto o dominio.
-   ============================================================ */
-
 const BASE_URL = 'http://localhost:3000';
 
 /* Wrapper de fetch con manejo de errores centralizado */
