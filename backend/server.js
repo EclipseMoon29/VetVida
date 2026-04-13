@@ -1,14 +1,3 @@
-// ============================================================
-//  VETVIDA — SERVIDOR EXPRESS (server.js)
-//  
-//  CÓMO CORRER:
-//  1. npm install
-//  2. Copiá .env.example a .env y completá tus datos
-//  3. Ejecutá database.sql en DBeaver
-//  4. npm run dev   (o npm start)
-//  5. Abrí http://localhost:3000/admin
-// ============================================================
-
 require('dotenv').config();
 const express      = require('express');
 const mysql        = require('mysql2/promise');

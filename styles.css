@@ -1,29 +1,6 @@
-/* ══════════════════════════════════════════════
-   VETVIDA — ESTILOS PRINCIPALES
-   styles.css
-   ══════════════════════════════════════════════
-
-   ÍNDICE:
-   1. Variables / Colores
-   2. Reset & Base
-   3. Cursor personalizado
-   4. Navegación
-   5. Hero
-   6. Sección Servicios
-   7. Sección Equipo
-   8. Sección Turnos / Formulario
-   9. Sección Testimonios
-   10. Footer
-   11. Animaciones (Scroll Reveal)
-   12. Responsive / Mobile
-   ══════════════════════════════════════════════ */
-
-
 /* ══════════════════════════════
    1. VARIABLES / COLORES
    ══════════════════════════════
-   Cambiá estos valores para personalizar
-   toda la paleta de la página fácilmente.
 */
 :root {
   --cream:            #F5F0E8;

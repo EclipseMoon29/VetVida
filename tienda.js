@@ -1,12 +1,3 @@
-/* ============================================================
-   VETVIDA — TIENDA (tienda.js)
-   Conectado al backend real:
-     POST /api/pedidos       → guarda compra en MySQL → aparece en admin
-     POST /api/clientes      → guarda cliente en MySQL → aparece en admin
-   Si el servidor no está corriendo, todo funciona en modo offline
-   y el carrito se guarda en localStorage.
-   ============================================================ */
-
 /* ══ LOADER ══ */
 window.addEventListener('load', () => {
   setTimeout(() => {

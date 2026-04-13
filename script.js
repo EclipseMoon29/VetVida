@@ -1,20 +1,3 @@
-/* ══════════════════════════════════════════════
-   VETVIDA — JAVASCRIPT INTERACTIVO
-   script.js
-   ══════════════════════════════════════════════
-
-   ÍNDICE:
-   1. Cursor personalizado
-   2. Navbar (efecto scroll)
-   3. Grilla de puntos decorativa (hero)
-   4. Contadores animados
-   5. Scroll Reveal
-   6. Parallax en texto del hero
-   7. Fecha mínima en formulario
-   8. Envío del formulario con validación
-   ══════════════════════════════════════════════ */
-
-
 /* ══════════════════════════════
    1. CURSOR PERSONALIZADO
    ══════════════════════════════
