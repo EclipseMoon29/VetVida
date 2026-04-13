@@ -6,9 +6,57 @@
   <title>VetVida — Clínica Veterinaria</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Activar pantalla de carga (también manejado en script.js) -->
+  <script>
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        var loader = document.getElementById('loader');
+        if (loader) loader.classList.add('hidden');
+      }, 1800);
+    });
+  </script>
+  <script src="api.js" defer></script>
+  <!-- Favicon patita -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+
+  <!-- ══ PANTALLA DE CARGA ══ -->
+  <style>
+    #loader{
+      position:fixed;inset:0;background:var(--forest);z-index:10000;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+      transition:opacity .7s ease, visibility .7s ease;
+    }
+    #loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .loader-logo{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:900;color:white;letter-spacing:-1px}
+    .loader-logo span{color:#C4714A}
+    .loader-paws{display:flex;gap:8px;align-items:center}
+    .loader-paw{font-size:1.4rem;animation:pawBounce 1.2s ease-in-out infinite}
+    .loader-paw:nth-child(2){animation-delay:.2s}
+    .loader-paw:nth-child(3){animation-delay:.4s}
+    .loader-paw:nth-child(4){animation-delay:.6s}
+    @keyframes pawBounce{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-10px)}}
+    .loader-bar-wrap{width:220px;height:3px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden}
+    .loader-bar{height:100%;background:#C4714A;border-radius:10px;width:0;animation:loadBar 2s ease forwards}
+    @keyframes loadBar{to{width:100%}}
+    .loader-text{color:rgba(255,255,255,.45);font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase}
+  </style>
 </head>
 <body>
+
+  <!-- ══ PANTALLA DE CARGA ══ -->
+  <div id="loader">
+    <div class="loader-logo">Vet<span>Vida</span></div>
+    <div class="loader-paws">
+      <span class="loader-paw">🐾</span>
+      <span class="loader-paw">🐾</span>
+      <span class="loader-paw">🐾</span>
+      <span class="loader-paw">🐾</span>
+    </div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    <p class="loader-text">Cargando VetVida…</p>
+  </div>
+
 
   <!-- ══════════════════════════════
        CURSOR PERSONALIZADO
@@ -323,7 +371,7 @@
           <h4>📍 Cómo contactarnos</h4>
           <div class="contact-item"><span class="contact-icon">📞</span> (0341) 456-7890</div>
           <div class="contact-item"><span class="contact-icon">💬</span> WhatsApp: +54 9 341 456-7890</div>
-          <div class="contact-item"><span class="contact-icon">📧</span> hola@vetvida.com.ar</div>
+          <div class="contact-item"><span class="contact-icon">📧</span> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2c4443404d6c5a49585a45484d024f4341024d5e">[email&#160;protected]</a></div>
           <div class="contact-item"><span class="contact-icon">📍</span> Av. San Martín 1240, Rosario</div>
         </div>
         <div class="info-block">
@@ -375,9 +423,11 @@
     </div>
     <div class="footer-bottom">
       <span>© 2025 VetVida. Todos los derechos reservados.</span>
+      <span>Hecho con ❤️ 
       <span>Hecho con ❤️ para los amantes de los animales</span>
     </div>
   </footer>
+
   <script src="api.js" defer></script>
   <script src="script.js" defer></script>
 </body>
