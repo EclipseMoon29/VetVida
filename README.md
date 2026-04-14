@@ -58,15 +58,15 @@ cd vetvida
 Tip: Para una mejor experiencia de desarrollo, usá la extensión Live Server en VS Code.
 
 🚀 Instalación Base de Datos
-# 1. Crear la base de datos
+1. Crear la base de datos
 mysql -u root -p < database.sql
-# o abrilo en DBeaver y ejecutá con Ctrl+A + Ctrl+Enter
+o abrilo en DBeaver y ejecutá con Ctrl+A + Ctrl+Enter
 
-# 2. Configurar el backend
+2. Configurar el backend
 cp .env.example .env
-# Editá .env y completá DB_PASSWORD
+Editá .env y completá DB_PASSWORD
 
-# 3. Instalar y ejecutar
+3. Instalar y ejecutar
 cd vetvida-backend
 npm install
 npm run dev
