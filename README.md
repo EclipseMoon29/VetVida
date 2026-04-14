@@ -54,8 +54,6 @@ Abrí index.html en tu navegador
 No requiere servidor ni instalación de dependencias
 bashgit clone https://github.com/tu-usuario/vetvida.git
 cd vetvida
-# Abrí index.html en tu navegador favorito
-Tip: Para una mejor experiencia de desarrollo, usá la extensión Live Server en VS Code.
 
 🚀 Instalación Base de Datos
 1. Crear la base de datos
@@ -70,6 +68,9 @@ Editá .env y completá DB_PASSWORD
 cd vetvida-backend
 npm install
 npm run dev
+
+# Abrí index.html en tu navegador favorito
+Tip: Para una mejor experiencia de desarrollo, usá la extensión Live Server en VS Code.
 
 📄 Páginas
 index.html — Landing page
