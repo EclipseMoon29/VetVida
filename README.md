@@ -57,6 +57,20 @@ cd vetvida
 # Abrí index.html en tu navegador favorito
 Tip: Para una mejor experiencia de desarrollo, usá la extensión Live Server en VS Code.
 
+🚀 Instalación Base de Datos
+# 1. Crear la base de datos
+mysql -u root -p < database.sql
+# o abrilo en DBeaver y ejecutá con Ctrl+A + Ctrl+Enter
+
+# 2. Configurar el backend
+cp .env.example .env
+# Editá .env y completá DB_PASSWORD
+
+# 3. Instalar y ejecutar
+cd vetvida-backend
+npm install
+npm run dev
+
 📄 Páginas
 index.html — Landing page
 SecciónDescripción#heroPresentación principal con CTA y estadísticas#serviciosGrilla de 6 servicios con precios#equipoCards de 3 veterinarios con bio#testimonios3 reseñas de clientes#turnosFormulario de reserva + info de contacto
